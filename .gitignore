@@ -1,0 +1,29 @@
+# Node
+node_modules/
+dist/
+
+# PHP / Laravel
+vendor/
+
+# Environment Variables
+.env
+.env.local
+.env.development
+.env.production
+
+# Docker Data
+dbdata/
+mysql/
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
