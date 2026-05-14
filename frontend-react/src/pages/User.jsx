@@ -45,7 +45,11 @@ const User = () => {
   const fileInputRef = useRef(null);
 
   useEffect(() => {
+<<<<<<< HEAD
     apiCall('/users/me')
+=======
+    apiCall('/user/profile.php')
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
       .then(res => {
         if (res.success && res.user) {
           setDisplayName(res.user.display_name || currentName);
@@ -79,9 +83,15 @@ const User = () => {
         return;
       }
       try {
+<<<<<<< HEAD
         const res = await apiCall('/auth/change-password', {
           method: 'POST',
           body: JSON.stringify({ currentPassword: currentPassword, newPassword: newPassword })
+=======
+        const res = await apiCall('/user/password.php', {
+          method: 'PUT',
+          body: JSON.stringify({ current_password: currentPassword, new_password: newPassword })
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
         });
         if (res.success) {
           setSuccessMsg('✅ ' + res.message);
@@ -100,7 +110,11 @@ const User = () => {
       return;
     }
     try {
+<<<<<<< HEAD
       const res = await apiCall('/users/me', {
+=======
+      const res = await apiCall('/user/profile.php', {
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
         method: 'PUT',
         body: JSON.stringify({ display_name: displayName.trim(), avatar, accent_color: accentCls })
       });

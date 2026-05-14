@@ -44,7 +44,10 @@ class NoteController extends Controller
         $notes->each(function ($note) {
             $note->shareList = $note->shares->map(fn ($s) => [
                 'id'           => $s->id,
+<<<<<<< HEAD
                 'shared_with'  => $s->shared_with,
+=======
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
                 'role'         => $s->role,
                 'email'        => $s->sharedUser->email ?? '',
                 'display_name' => $s->sharedUser->display_name ?? '',
@@ -74,6 +77,7 @@ class NoteController extends Controller
             'content' => $request->input('content', ''),
         ]);
 
+<<<<<<< HEAD
         // Allow setting created_at for calendar-based note creation
         if ($request->filled('created_at')) {
             $note->created_at = $request->created_at;
@@ -85,6 +89,8 @@ class NoteController extends Controller
             $note->update(['note_password' => \Illuminate\Support\Facades\Hash::make($request->password)]);
         }
 
+=======
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
         // Gắn labels nếu có
         if ($request->has('label_ids')) {
             $note->labels()->sync($request->label_ids);
@@ -92,7 +98,11 @@ class NoteController extends Controller
 
         $note->load(['labels', 'attachments']);
         $note->shareList = [];
+<<<<<<< HEAD
         $note->has_password = !empty($note->note_password);
+=======
+        $note->has_password = false;
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
 
         return response()->json(['success' => true, 'note' => $note], 201);
     }
@@ -104,10 +114,13 @@ class NoteController extends Controller
     {
         // Policy: chỉ owner mới được sửa
         if ($note->user_id !== $request->user()->id) {
+<<<<<<< HEAD
             // If note has password, shared users are forced to view-only
             if ($note->note_password) {
                 return response()->json(['error' => 'Note bị khóa mật khẩu — chỉ được xem'], 403);
             }
+=======
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
             // Check if shared with editor role
             $share = $note->shares()
                 ->where('shared_with', $request->user()->id)
@@ -118,6 +131,7 @@ class NoteController extends Controller
             }
         }
 
+<<<<<<< HEAD
         $updateData = [
             'title'   => $request->title,
             'content' => $request->input('content', ''),
@@ -126,6 +140,12 @@ class NoteController extends Controller
             $updateData['visibility'] = $request->visibility;
         }
         $note->update($updateData);
+=======
+        $note->update([
+            'title'   => $request->title,
+            'content' => $request->input('content', ''),
+        ]);
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
 
         if ($request->has('label_ids')) {
             $note->labels()->sync($request->label_ids);
@@ -134,7 +154,10 @@ class NoteController extends Controller
         $note->load(['labels', 'attachments', 'shares.sharedUser']);
         $note->shareList = $note->shares->map(fn ($s) => [
             'id'           => $s->id,
+<<<<<<< HEAD
             'shared_with'  => $s->shared_with,
+=======
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
             'role'         => $s->role,
             'email'        => $s->sharedUser->email ?? '',
             'display_name' => $s->sharedUser->display_name ?? '',

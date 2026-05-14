@@ -5,7 +5,10 @@ export const apiCall = async (endpoint, options = {}) => {
   
   const defaultHeaders = {
     'Content-Type': 'application/json',
+<<<<<<< HEAD
     'Accept': 'application/json',
+=======
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
   };
 
@@ -19,6 +22,7 @@ export const apiCall = async (endpoint, options = {}) => {
 
   try {
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
+<<<<<<< HEAD
     
     // Handle 401 Unauthorized — token expired or invalid
     if (response.status === 401) {
@@ -62,6 +66,12 @@ export const apiCall = async (endpoint, options = {}) => {
         throw new Error(Array.isArray(firstError) ? firstError[0] : firstError);
       }
       throw new Error(data.error || data.message || 'Có lỗi xảy ra từ máy chủ');
+=======
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Có lỗi xảy ra từ máy chủ');
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
     }
 
     return data;

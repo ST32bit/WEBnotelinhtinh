@@ -14,9 +14,15 @@ function getNewMoonDay(k, tz) {
   const T = k / 1236.85, T2 = T * T, T3 = T2 * T;
   let Jde = 2415020.75933 + 29.53058868 * k + 0.0001178 * T2 - 0.000000155 * T3;
   Jde += 0.00033 * Math.sin((166.56 + 132.87 * T - 0.009173 * T2) * Math.PI / 180);
+<<<<<<< HEAD
   const M = 357.52910 + 29.10535608 * k - 0.0000333 * T2 - 0.00000347 * T3;
   const Mpr = 306.0253 + 385.81691806 * k + 0.0107306 * T2 + 0.00001236 * T3;
   const F = 21.2964 + 390.67050646 * k - 0.0016528 * T2 - 0.00000239 * T3;
+=======
+  const M   = 357.52910 + 29.10535608 * k - 0.0000333 * T2 - 0.00000347 * T3;
+  const Mpr = 306.0253 + 385.81691806 * k + 0.0107306 * T2 + 0.00001236 * T3;
+  const F   = 21.2964 + 390.67050646 * k - 0.0016528 * T2 - 0.00000239 * T3;
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
   let C1 = (0.1734 - 0.000393 * T) * Math.sin(M * Math.PI / 180) + 0.0021 * Math.sin(2 * M * Math.PI / 180);
   C1 -= 0.4068 * Math.sin(Mpr * Math.PI / 180) + 0.0161 * Math.sin(2 * Mpr * Math.PI / 180) + 0.0004 * Math.sin(3 * Mpr * Math.PI / 180);
   C1 += 0.0104 * Math.sin(2 * F * Math.PI / 180) - 0.0051 * Math.sin((M + Mpr) * Math.PI / 180) - 0.0074 * Math.sin((M - Mpr) * Math.PI / 180);
@@ -27,7 +33,11 @@ function getNewMoonDay(k, tz) {
 }
 function getSunLongitude(jdn, tz) {
   const T = (jdn - 2451545.5 - tz / 24) / 36525, T2 = T * T, dr = Math.PI / 180;
+<<<<<<< HEAD
   const M = 357.52910 + 35999.05030 * T - 0.0001559 * T2 - 0.00000048 * T * T2;
+=======
+  const M  = 357.52910 + 35999.05030 * T - 0.0001559 * T2 - 0.00000048 * T * T2;
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
   const L0 = 280.46645 + 36000.76983 * T + 0.0003032 * T2;
   let DL = (1.9146 - 0.004817 * T - 0.000014 * T2) * Math.sin(dr * M) + (0.019993 - 0.000101 * T) * Math.sin(dr * 2 * M) + 0.00029 * Math.sin(dr * 3 * M);
   let L = L0 + DL; L -= 360 * INT(L / 360); return INT(L / 30);
@@ -64,6 +74,7 @@ function solarToLunar(dd, mm, yy) {
 
 //các hằng số cho ngày lễ và tùy chọn giao diện
 const SOLAR_HOLIDAYS = [
+<<<<<<< HEAD
   { month: 1, day: 1, name: 'Tết Dương Lịch', emoji: '🎆', type: 'holiday', color: '#fde68a' },
   { month: 2, day: 14, name: "Valentine's Day", emoji: '💝', type: 'intl', color: '#fca5a5' },
   { month: 3, day: 8, name: 'Quốc tế Phụ nữ', emoji: '🌸', type: 'holiday', color: '#f9a8d4' },
@@ -110,6 +121,54 @@ const FILTER_OPTIONS = [
   { value: 'shared', label: 'Đã chia sẻ', icon: '🔗' },
 ];
 const LABEL_COLORS = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6', '#64748b', '#78716c'];
+=======
+  { month: 1,  day: 1,  name: 'Tết Dương Lịch',    emoji: '🎆', type: 'holiday', color: '#fde68a' },
+  { month: 2,  day: 14, name: "Valentine's Day",     emoji: '💝', type: 'intl',    color: '#fca5a5' },
+  { month: 3,  day: 8,  name: 'Quốc tế Phụ nữ',     emoji: '🌸', type: 'holiday', color: '#f9a8d4' },
+  { month: 4,  day: 30, name: 'Giải phóng miền Nam', emoji: '🎉', type: 'holiday', color: '#86efac' },
+  { month: 5,  day: 1,  name: 'Quốc tế Lao động',   emoji: '⚒️', type: 'holiday', color: '#6ee7b7' },
+  { month: 5,  day: 19, name: 'Sinh nhật Bác Hồ',   emoji: '⭐', type: 'holiday', color: '#fcd34d' },
+  { month: 6,  day: 1,  name: 'Quốc tế Thiếu nhi',  emoji: '🎈', type: 'holiday', color: '#c4b5fd' },
+  { month: 9,  day: 2,  name: 'Quốc khánh',          emoji: '🇻🇳', type: 'holiday', color: '#fca5a5' },
+  { month: 10, day: 20, name: 'Phụ nữ Việt Nam',     emoji: '🌺', type: 'holiday', color: '#f9a8d4' },
+  { month: 10, day: 31, name: 'Halloween',            emoji: '🎃', type: 'intl',    color: '#fb923c' },
+  { month: 11, day: 20, name: 'Ngày Nhà giáo',       emoji: '📚', type: 'holiday', color: '#7dd3fc' },
+  { month: 12, day: 25, name: 'Giáng Sinh',           emoji: '🎄', type: 'intl',    color: '#86efac' },
+];
+const LUNAR_HOLIDAYS = [
+  { lm: 1,  ld: 1,  name: 'Tết Nguyên Đán',    emoji: '🧧', type: 'tet',     color: '#fca5a5' },
+  { lm: 1,  ld: 2,  name: 'Mùng 2 Tết',        emoji: '🧧', type: 'tet',     color: '#fca5a5' },
+  { lm: 1,  ld: 3,  name: 'Mùng 3 Tết',        emoji: '🧧', type: 'tet',     color: '#fca5a5' },
+  { lm: 1,  ld: 15, name: 'Rằm tháng Giêng',   emoji: '🌕', type: 'lunar',   color: '#fde68a' },
+  { lm: 3,  ld: 10, name: 'Giỗ Tổ Hùng Vương', emoji: '🏛️', type: 'holiday', color: '#bbf7d0' },
+  { lm: 4,  ld: 15, name: 'Phật Đản',           emoji: '🪷', type: 'lunar',   color: '#c4b5fd' },
+  { lm: 7,  ld: 7,  name: 'Thất Tịch',          emoji: '⭐', type: 'lunar',   color: '#bfdbfe' },
+  { lm: 7,  ld: 15, name: 'Lễ Vu Lan',          emoji: '🕯️', type: 'lunar',   color: '#e9d5ff' },
+  { lm: 8,  ld: 15, name: 'Tết Trung Thu',      emoji: '🥮', type: 'lunar',   color: '#fde68a' },
+  { lm: 12, ld: 23, name: 'Ông Táo về Trời',    emoji: '🐟', type: 'tet',     color: '#fde68a' },
+  { lm: 12, ld: 30, name: 'Giao Thừa',          emoji: '🎆', type: 'tet',     color: '#fca5a5' },
+];
+
+const NOTE_BG_COLORS = ['#fef08a','#bbf7d0','#bfdbfe','#fca5a5','#e9d5ff','#fed7aa','#f0fdf4','#fdf4ff','#f1f5f9','#fce7f3'];
+const FONT_OPTIONS = [
+  { id: 'Nunito',          label: 'Nunito (mặc định)' },
+  { id: 'Georgia',         label: 'Georgia'           },
+  { id: 'Times New Roman', label: 'Times New Roman'   },
+  { id: 'Courier New',     label: 'Courier New'       },
+  { id: 'Verdana',         label: 'Verdana'           },
+  { id: 'Trebuchet MS',    label: 'Trebuchet MS'      },
+  { id: 'Comic Sans MS',   label: 'Comic Sans MS'     },
+  { id: 'Tahoma',          label: 'Tahoma'            },
+];
+const TEXT_COLORS = ['#1f2937','#dc2626','#d97706','#16a34a','#2563eb','#7c3aed','#db2777','#0891b2','#ffffff','#6b7280'];
+const FILTER_OPTIONS = [
+  { value: 'all',    label: 'Tất cả',     icon: '📋' },
+  { value: 'pinned', label: 'Đã ghim',    icon: '📌' },
+  { value: 'locked', label: 'Có khóa',    icon: '🔒' },
+  { value: 'shared', label: 'Đã chia sẻ', icon: '🔗' },
+];
+const LABEL_COLORS = ['#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#8b5cf6','#ec4899','#14b8a6','#64748b','#78716c'];
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
 
 //Theme
 function useTheme() {
@@ -147,6 +206,7 @@ const CLS_CARD = 'rounded-2xl p-3.5 shadow-sm transition-all duration-200 hover:
 //PASSWORD MODAL
 const PasswordModal = ({ mode, onSubmit, onCancel, error }) => {
   const [pass, setPass] = useState('');
+<<<<<<< HEAD
   const [passConfirm, setPassConfirm] = useState('');
   const [currentPass, setCurrentPass] = useState('');
   const [localError, setLocalError] = useState('');
@@ -177,10 +237,13 @@ const PasswordModal = ({ mode, onSubmit, onCancel, error }) => {
   const titles = { set: 'Đặt mật khẩu', change: 'Đổi mật khẩu', remove: 'Gỡ mật khẩu', verify: 'Nhập mật khẩu' };
   const subtitles = { set: 'Nhập mật khẩu 2 lần để xác nhận', change: 'Nhập MK hiện tại + MK mới', remove: 'Nhập MK hiện tại để xác nhận', verify: 'Note này được bảo vệ' };
 
+=======
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
   return (
     <div className={CLS_OVERLAY} onClick={onCancel}>
       <div className={`${CLS_BOX} max-w-sm`} onClick={e => e.stopPropagation()}>
         <div className="text-center mb-5">
+<<<<<<< HEAD
           <div className="text-5xl mb-2">{mode === 'remove' ? '🔓' : '🔒'}</div>
           <h3 className="text-lg font-black m-0">{titles[mode] || 'Mật khẩu'}</h3>
           <p className="text-xs text-slate-400 mt-1">{subtitles[mode]}</p>
@@ -221,6 +284,29 @@ const PasswordModal = ({ mode, onSubmit, onCancel, error }) => {
           <button onClick={handleSubmit} className={`${CLS_BTN_PRI} flex-1`}>
             {mode === 'remove' ? '🔓 Gỡ mật khẩu' : '✅ Xác nhận'}
           </button>
+=======
+          <div className="text-5xl mb-2">🔒</div>
+          <h3 className="text-lg font-black m-0">{mode === 'set' ? 'Đặt mật khẩu' : 'Nhập mật khẩu'}</h3>
+          <p className="text-xs text-slate-400 mt-1">{mode === 'set' ? 'Bảo vệ note của bạn' : 'Note này được bảo vệ'}</p>
+        </div>
+        {error && (
+          <div className="bg-red-50 text-red-600 rounded-xl px-4 py-2.5 font-extrabold text-xs text-center mb-3">
+            {error}
+          </div>
+        )}
+        <input
+          type="password"
+          placeholder="Mật khẩu..."
+          value={pass}
+          onChange={e => setPass(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && onSubmit(pass)}
+          autoFocus
+          className={`${CLS_INPUT} text-center font-black text-xl tracking-[4px] mb-3`}
+        />
+        <div className="flex gap-2.5">
+          <button onClick={onCancel} className={`${CLS_BTN_SEC} flex-1`}>Hủy</button>
+          <button onClick={() => onSubmit(pass)} className={`${CLS_BTN_PRI} flex-1`}>Xác nhận</button>
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
         </div>
       </div>
     </div>
@@ -228,6 +314,7 @@ const PasswordModal = ({ mode, onSubmit, onCancel, error }) => {
 };
 
 /* ════════════════════════════════════════════════════════════
+<<<<<<< HEAD
    SHARE MODAL — Better Approach: Email notify, Permission, Copy link, Status
 ════════════════════════════════════════════════════════════ */
 const ShareModal = ({ note, onClose, onSave }) => {
@@ -327,10 +414,31 @@ const ShareModal = ({ note, onClose, onSave }) => {
   const visOptions = [
     { v: 'private', icon: '🔒', label: 'Riêng tư', desc: 'Chỉ người được mời' },
     { v: 'public', icon: '🌍', label: 'Công khai', desc: 'Ai có link đều xem được (chỉ xem)' },
+=======
+   SHARE MODAL
+════════════════════════════════════════════════════════════ */
+const ShareModal = ({ note, onClose, onSave }) => {
+  const [shareList, setShareList] = useState(note.shareList || []);
+  const [email, setEmail]         = useState('');
+  const [role, setRole]           = useState('viewer');
+  const [visibility, setVisibility] = useState(note.visibility || 'private');
+
+  const addShare = () => {
+    const e2 = email.trim().toLowerCase();
+    if (!e2 || !/\S+@\S+\.\S+/.test(e2) || shareList.find(s => s.email === e2)) return;
+    setShareList([...shareList, { email: e2, role }]); setEmail('');
+  };
+
+  const visOptions = [
+    { v: 'private', icon: '🔒', label: 'Riêng tư' },
+    { v: 'link',    icon: '🔗', label: 'Qua link'  },
+    { v: 'public',  icon: '🌍', label: 'Công khai'  },
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
   ];
 
   return (
     <div className={CLS_OVERLAY} onClick={onClose}>
+<<<<<<< HEAD
       <div className="bg-white dark:bg-slate-800 rounded-[22px] p-0 w-full max-w-lg shadow-2xl max-h-[92vh] overflow-hidden text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 flex flex-col"
         onClick={e => e.stopPropagation()}>
 
@@ -484,6 +592,65 @@ const ShareModal = ({ note, onClose, onSave }) => {
             </p>
           )}
         </div>
+=======
+      <div className={CLS_BOX} onClick={e => e.stopPropagation()}>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="m-0 font-black">🔗 Chia sẻ note</h3>
+          <button onClick={onClose} className={CLS_ICON_BTN}>✕</button>
+        </div>
+
+        <div className="mb-4">
+          <span className={CLS_LABEL}>Chế độ hiển thị</span>
+          <div className="grid grid-cols-3 gap-2">
+            {visOptions.map(o => (
+              <button key={o.v} type="button" onClick={() => setVisibility(o.v)}
+                className={`p-2.5 rounded-xl border-2 text-center cursor-pointer transition-all font-[inherit] ${visibility === o.v ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30' : 'border-slate-200 dark:border-slate-600 bg-transparent'}`}>
+                <div className="text-xl mb-1">{o.icon}</div>
+                <div className="text-[11px] font-extrabold">{o.label}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-4">
+          <span className={CLS_LABEL}>Thêm người</span>
+          <div className="flex gap-2 mb-2">
+            <input type="email" placeholder="Email..." value={email} onChange={e => setEmail(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && addShare()} className={`${CLS_INPUT} flex-1`} />
+            <select value={role} onChange={e => setRole(e.target.value)}
+              className={`${CLS_INPUT} w-24 text-xs`}>
+              <option value="viewer">👁️ Xem</option>
+              <option value="editor">✏️ Sửa</option>
+            </select>
+            <button onClick={addShare} className={`${CLS_BTN_PRI} px-3.5`}>+</button>
+          </div>
+          <div className="max-h-40 overflow-y-auto flex flex-col gap-1.5">
+            {shareList.map(s => (
+              <div key={s.email} className="flex items-center gap-2.5 px-3 py-2 bg-slate-50 dark:bg-slate-700 rounded-xl">
+                <div className="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center font-black text-xs text-indigo-600 dark:text-indigo-300">
+                  {s.email[0].toUpperCase()}
+                </div>
+                <span className="flex-1 text-[13px] font-bold truncate">{s.email}</span>
+                <select value={s.role}
+                  onChange={e => setShareList(shareList.map(x => x.email === s.email ? { ...x, role: e.target.value } : x))}
+                  className="text-[11px] font-extrabold border-0 bg-transparent text-slate-700 dark:text-slate-300 cursor-pointer font-[inherit]">
+                  <option value="viewer">👁️ Xem</option>
+                  <option value="editor">✏️ Sửa</option>
+                </select>
+                <button onClick={() => setShareList(shareList.filter(x => x.email !== s.email))}
+                  className="w-5 h-5 rounded-md bg-red-100 border-0 text-red-600 cursor-pointer font-black text-[10px] font-[inherit]">✕</button>
+              </div>
+            ))}
+            {shareList.length === 0 && (
+              <div className="text-center text-slate-400 text-[13px] py-2.5">Chưa chia sẻ với ai</div>
+            )}
+          </div>
+        </div>
+
+        <button onClick={() => onSave({ shareList, visibility })} className={`${CLS_BTN_PRI} w-full py-3`}>
+          💾 Lưu cài đặt chia sẻ
+        </button>
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
       </div>
     </div>
   );
@@ -492,12 +659,16 @@ const ShareModal = ({ note, onClose, onSave }) => {
 /* ════════════════════════════════════════════════════════════
    VIEW NOTE MODAL
 ════════════════════════════════════════════════════════════ */
+<<<<<<< HEAD
 const ViewNoteModal = ({ note, onClose, onEdit, onRevokeShare, onUpdateShareRole, currentUserEmail }) => {
   // If note has password, force view-only for shared users (regardless of original role)
   const effectiveRole = (note.has_password || note.password) && note.owner_email ? 'viewer' : note.role;
   const isSharedViewOnly = effectiveRole === 'viewer' || (note.owner_email && effectiveRole !== 'editor' && effectiveRole !== 'owner');
   const isSharedNote = !!note.owner_email; // has owner_email means it's from sharedWithMe
   return (
+=======
+const ViewNoteModal = ({ note, onClose, onEdit, onRevokeShare }) => (
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
   <div className={CLS_OVERLAY} onClick={onClose}>
     <div
       className="rounded-[22px] p-6 w-full max-w-2xl shadow-2xl max-h-[90vh] flex flex-col border border-black/10"
@@ -509,7 +680,11 @@ const ViewNoteModal = ({ note, onClose, onEdit, onRevokeShare, onUpdateShareRole
         <div className="flex-1 pr-3">
           <div className="flex flex-wrap gap-1.5 mb-2">
             {note.isPinned && <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700">📌 Đã ghim</span>}
+<<<<<<< HEAD
             {(note.password || note.has_password) && <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800">🔒 Có mật khẩu</span>}
+=======
+            {note.password && <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800">🔒 Có mật khẩu</span>}
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
             {(note.shareList?.length > 0 || note.visibility !== 'private') && (
               <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700">🔗 Đã chia sẻ</span>
             )}
@@ -529,12 +704,16 @@ const ViewNoteModal = ({ note, onClose, onEdit, onRevokeShare, onUpdateShareRole
           )}
         </div>
         <div className="flex gap-2 flex-shrink-0">
+<<<<<<< HEAD
           {!isSharedViewOnly && (
             <button onClick={onEdit} className={`${CLS_BTN_SEC} text-xs py-1.5 px-3.5`}>✏️ Sửa</button>
           )}
           {isSharedViewOnly && isSharedNote && (
             <span className="text-[11px] font-extrabold px-2.5 py-1.5 rounded-xl bg-amber-100 text-amber-700 self-center">👁️ Chỉ xem</span>
           )}
+=======
+          <button onClick={onEdit} className={`${CLS_BTN_SEC} text-xs py-1.5 px-3.5`}>✏️ Sửa</button>
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
           <button onClick={onClose} className={CLS_ICON_BTN}>✕</button>
         </div>
       </div>
@@ -567,6 +746,7 @@ const ViewNoteModal = ({ note, onClose, onEdit, onRevokeShare, onUpdateShareRole
         )}
 
         {/* Sharing detail */}
+<<<<<<< HEAD
         {(note.shareList?.length > 0 || note.visibility === 'public') && (
           <div className="mt-4 pt-3.5 border-t border-black/10">
             <span className={CLS_LABEL}>🔗 Chi tiết chia sẻ</span>
@@ -577,6 +757,18 @@ const ViewNoteModal = ({ note, onClose, onEdit, onRevokeShare, onUpdateShareRole
             )}
             {(note.shareList || []).map(s => (
               <div key={s.email} className="flex items-center gap-2.5 px-3 py-2 bg-white/60 rounded-xl mb-1.5 group">
+=======
+        {(note.shareList?.length > 0 || note.visibility !== 'private') && (
+          <div className="mt-4 pt-3.5 border-t border-black/10">
+            <span className={CLS_LABEL}>🔗 Chi tiết chia sẻ</span>
+            {note.visibility !== 'private' && (
+              <div className="flex items-center gap-2 px-3 py-2 bg-white/60 rounded-xl mb-2 text-sm font-bold text-slate-700">
+                {note.visibility === 'public' ? '🌍 Công khai với mọi người' : '🔗 Truy cập qua link'}
+              </div>
+            )}
+            {(note.shareList || []).map(s => (
+              <div key={s.email} className="flex items-center gap-2.5 px-3 py-2 bg-white/60 rounded-xl mb-1.5">
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
                 <div className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center font-black text-sm text-indigo-600 flex-shrink-0">
                   {s.email[0].toUpperCase()}
                 </div>
@@ -586,6 +778,7 @@ const ViewNoteModal = ({ note, onClose, onEdit, onRevokeShare, onUpdateShareRole
                     {s.role === 'editor' ? '✏️ Có thể chỉnh sửa' : '👁️ Chỉ xem'}
                   </div>
                 </div>
+<<<<<<< HEAD
                 <div className="flex gap-1">
                   <select
                     value={s.role}
@@ -600,6 +793,12 @@ const ViewNoteModal = ({ note, onClose, onEdit, onRevokeShare, onUpdateShareRole
                     Xóa
                   </button>
                 </div>
+=======
+                <button onClick={() => onRevokeShare(note.id, s.email)}
+                  className="text-[11px] font-extrabold px-2.5 py-1 rounded-lg bg-red-100 border-0 text-red-600 cursor-pointer font-[inherit]">
+                  Xóa quyền
+                </button>
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
               </div>
             ))}
           </div>
@@ -607,8 +806,12 @@ const ViewNoteModal = ({ note, onClose, onEdit, onRevokeShare, onUpdateShareRole
       </div>
     </div>
   </div>
+<<<<<<< HEAD
   );
 };
+=======
+);
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
 
 /* ════════════════════════════════════════════════════════════
    LABEL MANAGER MODAL
@@ -653,7 +856,11 @@ const LabelManagerModal = ({ allLabels, noteLabels, onClose, onSave, onManageGlo
    GLOBAL LABEL EDITOR
 ════════════════════════════════════════════════════════════ */
 const LabelEditor = ({ labels, onClose, onSave }) => {
+<<<<<<< HEAD
   const [list, setList] = useState(labels.map(l => ({ ...l })));
+=======
+  const [list, setList]       = useState(labels.map(l => ({ ...l })));
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
   const [newName, setNewName] = useState('');
   const [newColor, setNewColor] = useState(LABEL_COLORS[0]);
 
@@ -729,6 +936,7 @@ const Home = () => {
 
   const currentUser = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
   const displayName = localStorage.getItem('displayName') || sessionStorage.getItem('displayName') || (currentUser ? currentUser.split('@')[0] : 'Khách');
+<<<<<<< HEAD
   const avatar = localStorage.getItem('avatar') || sessionStorage.getItem('avatar') || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix';
   const isActive = localStorage.getItem('isActive') || sessionStorage.getItem('isActive');
 
@@ -754,28 +962,64 @@ const Home = () => {
 
   const [viewingNote, setViewingNote] = useState(null);
   const [shareModal, setShareModal] = useState(null);
+=======
+  const avatar      = localStorage.getItem('avatar') || sessionStorage.getItem('avatar') || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix';
+  const isActive    = localStorage.getItem('isActive') || sessionStorage.getItem('isActive');
+
+  const [notes, setNotes]             = useState([]);
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [activeView, setActiveView]   = useState('calendar');
+  const [showModal, setShowModal]     = useState(false);
+  const [selectedDayNotes, setSelectedDayNotes] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen]       = useState(true);
+  const [viewMode, setViewMode]   = useState('grid');
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [isFlipping, setIsFlipping]     = useState(false);
+
+  const [searchQuery, setSearchQuery]   = useState('');
+  const [displayQuery, setDisplayQuery] = useState('');
+  const searchTimer = useRef(null);
+
+  const [allLabels, setAllLabels]     = useState(() => JSON.parse(localStorage.getItem('allLabels') || '[]'));
+  const [labelModal, setLabelModal]   = useState(null);
+  const [labelEditor, setLabelEditor] = useState(false);
+
+  const [viewingNote, setViewingNote]     = useState(null);
+  const [shareModal, setShareModal]       = useState(null);
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
   const [passwordModal, setPasswordModal] = useState(null);
   const [passwordError, setPasswordError] = useState('');
   const [unlockedNotes, setUnlockedNotes] = useState(new Set());
   const [confirmDelete, setConfirmDelete] = useState(null);
+<<<<<<< HEAD
   const [sharedSubTab, setSharedSubTab] = useState('by-me');
   const [sharedWithMe, setSharedWithMe] = useState([]);
+=======
+  const [sharedSubTab, setSharedSubTab]   = useState('by-me');
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
 
   const [prefs, setPrefs] = useState(() =>
     JSON.parse(localStorage.getItem('userPrefs') || JSON.stringify({ fontSize: 14, fontFamily: 'Nunito', defaultColor: '#fef08a' })));
   const [settings, setSettings] = useState(() =>
     JSON.parse(localStorage.getItem('appSettings') || JSON.stringify({ showVietnameseHolidays: true, showInternationalHolidays: true, showLunarHolidays: true, showTet: true })));
 
+<<<<<<< HEAD
   const editorRef = useRef(null);
   const autoSaveTimer = useRef(null);
   const pollingTimer = useRef(null); // Tiêu chí 24: real-time polling
   const isSaving = useRef(false); // Lock to prevent duplicate saves
+=======
+  const editorRef     = useRef(null);
+  const autoSaveTimer = useRef(null);
+  const pollingTimer  = useRef(null); // Tiêu chí 24: real-time polling
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
 
   const defaultNote = {
     id: null, title: '', content: '', color: prefs.defaultColor, isPinned: false,
     password: null, shareList: [], visibility: 'private', fontFamily: prefs.fontFamily,
     fontSize: prefs.fontSize, attachments: [], labels: [], createdAt: null, updatedAt: null, pinnedAt: null,
   };
+<<<<<<< HEAD
 
   // Helper: normalize note fields from API (snake_case → camelCase)
   const normalizeNote = (n) => ({
@@ -792,13 +1036,21 @@ const Home = () => {
   const normalizeNotes = (arr) => (arr || []).map(normalizeNote);
   const [formData, setFormData] = useState(defaultNote);
   const [editorFont, setEditorFont] = useState(prefs.fontFamily);
+=======
+  const [formData, setFormData]   = useState(defaultNote);
+  const [editorFont, setEditorFont]   = useState(prefs.fontFamily);
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
   const [editorColor, setEditorColor] = useState('#1f2937');
 
   /* ── Effects ── */
   useEffect(() => {
     if (currentUser) {
       // Load profile preferences
+<<<<<<< HEAD
       apiCall('/users/me').then(res => {
+=======
+      apiCall('/user/profile.php').then(res => {
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
         if (res.success && res.user) {
           if (res.user.preferences) {
             const prefData = res.user.preferences;
@@ -811,13 +1063,22 @@ const Home = () => {
       }).catch(e => console.error(e));
 
       // Load Labels from dedicated API (Tiêu chí 15, 19)
+<<<<<<< HEAD
       apiCall('/labels')
+=======
+      apiCall('/labels/index.php')
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
         .then(res => { if (res.success) setAllLabels(res.labels || []); })
         .catch(e => console.error('Failed to load labels', e));
 
       // Load Notes
+<<<<<<< HEAD
       apiCall('/notes')
         .then(res => { if (res.success) setNotes(normalizeNotes(res.notes)); })
+=======
+      apiCall('/notes/index.php')
+        .then(res => { if (res.success) setNotes(res.notes); })
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
         .catch(err => console.error('Failed to load notes', err));
     }
   }, [currentUser]);
@@ -829,7 +1090,11 @@ const Home = () => {
 
     if (prefSyncTimer.current) clearTimeout(prefSyncTimer.current);
     prefSyncTimer.current = setTimeout(() => {
+<<<<<<< HEAD
       apiCall('/users/me', {
+=======
+      apiCall('/user/profile.php', {
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
         method: 'PUT',
         body: JSON.stringify({ preferences: { settings, prefs } })
       }).catch(e => console.error('Failed to sync prefs', e));
@@ -846,6 +1111,7 @@ const Home = () => {
     if (!isShared) return;
 
     pollingTimer.current = setInterval(() => {
+<<<<<<< HEAD
       apiCall(`/notes/${formData.id}`)
         .then(res => {
           if (res.success && res.note) {
@@ -860,6 +1126,23 @@ const Home = () => {
             }
           }
         }).catch(() => { });
+=======
+      apiCall(`/notes/index.php?id=${formData.id}`)
+        .then(res => {
+          if (res.success && res.notes && res.notes.length > 0) {
+            const fresh = res.notes[0];
+            // Only update if server version is newer
+            if (fresh.updated_at > (formData.updatedAt || '')) {
+              const incoming = { ...fresh, attachments: fresh.attachments || [], labels: fresh.labels || [] };
+              setFormData(prev => ({ ...prev, content: incoming.content, title: incoming.title, updatedAt: fresh.updated_at }));
+              setNotes(prev => prev.map(n => n.id === fresh.id ? incoming : n));
+              if (editorRef.current && document.activeElement !== editorRef.current) {
+                editorRef.current.innerHTML = incoming.content || '';
+              }
+            }
+          }
+        }).catch(() => {});
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
     }, 5000);
 
     return () => { if (pollingTimer.current) clearInterval(pollingTimer.current); };
@@ -871,6 +1154,7 @@ const Home = () => {
       return () => clearTimeout(t);
     }
   }, [showModal, formData.id]);
+<<<<<<< HEAD
   /* ── Load shared-with-me notes ── */
   useEffect(() => {
     apiCall('/shares').then(res => {
@@ -885,6 +1169,8 @@ const Home = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+=======
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
 
   /* ── Helpers ── */
   const handleSearchInput = val => {
@@ -894,14 +1180,20 @@ const Home = () => {
       setSearchQuery(val);
       // Tiêu chí 14: Debounced server-side search
       const qs = val.trim() ? `?q=${encodeURIComponent(val.trim())}` : '';
+<<<<<<< HEAD
       apiCall(`/notes${qs}`)
         .then(res => { if (res.success) setNotes(normalizeNotes(res.notes)); })
+=======
+      apiCall(`/notes/index.php${qs}`)
+        .then(res => { if (res.success) setNotes(res.notes); })
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
         .catch(e => console.error(e));
     }, 400);
   };
 
   const saveNotes = updated => { setNotes(updated); };
 
+<<<<<<< HEAD
   // Helper: build API-safe payload from note data
   const buildApiPayload = (note, opts = {}) => {
     const payload = {
@@ -924,6 +1216,16 @@ const Home = () => {
   };
   const syncDeleteNote = (id) => {
     apiCall(`/notes/${id}`, { method: 'DELETE' }).catch(e => console.error(e));
+=======
+  const syncUpdateNote = (note) => {
+    apiCall('/notes/index.php', { method: 'PUT', body: JSON.stringify(note) }).catch(e => console.error(e));
+  };
+  const syncCreateNote = async (note) => {
+    return await apiCall('/notes/index.php', { method: 'POST', body: JSON.stringify(note) });
+  };
+  const syncDeleteNote = (id) => {
+    apiCall(`/notes/index.php?id=${id}`, { method: 'DELETE' }).catch(e => console.error(e));
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
   };
 
   const triggerAutoSave = useCallback((data, content) => {
@@ -933,12 +1235,26 @@ const Home = () => {
       const now = new Date().toISOString();
       const noteToSave = { ...data, content, updatedAt: now };
       if (data.id) {
+<<<<<<< HEAD
         // Existing note — just update
         setNotes(prev => prev.map(n => n.id === data.id ? noteToSave : n));
         apiCall(`/notes/${data.id}`, { method: 'PUT', body: JSON.stringify({ title: data.title, content: content || '' }) }).catch(e => console.error(e));
       }
       // NOTE: Do NOT auto-create new notes here to prevent duplicates.
       // New notes are only created via handleSaveNote (explicit save button).
+=======
+        setNotes(prev => prev.map(n => n.id === data.id ? noteToSave : n));
+        apiCall('/notes/index.php', { method: 'PUT', body: JSON.stringify(noteToSave) }).catch(e => console.error(e));
+      } else {
+        apiCall('/notes/index.php', { method: 'POST', body: JSON.stringify(noteToSave) })
+          .then(res => {
+            if (res.success && res.note) {
+              setNotes(prev => [res.note, ...prev]);
+              setFormData(fd => ({ ...fd, ...res.note }));
+            }
+          }).catch(e => console.error(e));
+      }
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
     }, 600);
   }, []);
 
@@ -948,7 +1264,11 @@ const Home = () => {
     SOLAR_HOLIDAYS.forEach(h => {
       if (h.month === m && h.day === d) {
         if (h.type === 'holiday' && settings.showVietnameseHolidays) holidays.push(h);
+<<<<<<< HEAD
         if (h.type === 'intl' && settings.showInternationalHolidays) holidays.push(h);
+=======
+        if (h.type === 'intl'    && settings.showInternationalHolidays) holidays.push(h);
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
       }
     });
     if (settings.showLunarHolidays || settings.showTet) {
@@ -966,7 +1286,11 @@ const Home = () => {
   const getLunarDay = useCallback((d, m, y) => { const l = solarToLunar(d, m, y); return `${l.day}/${l.month}${l.leap ? '*' : ''}`; }, []);
 
   const getSortedNotes = useCallback(list => {
+<<<<<<< HEAD
     const pinned = list.filter(n => n.isPinned).sort((a, b) => new Date(b.pinnedAt || 0) - new Date(a.pinnedAt || 0));
+=======
+    const pinned   = list.filter(n => n.isPinned).sort((a, b) => new Date(b.pinnedAt || 0) - new Date(a.pinnedAt || 0));
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
     const unpinned = list.filter(n => !n.isPinned).sort((a, b) => new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0));
     return [...pinned, ...unpinned];
   }, []);
@@ -974,6 +1298,7 @@ const Home = () => {
   const applySearch = useCallback(list => {
     if (!searchQuery.trim()) return list;
     const q = searchQuery.toLowerCase();
+<<<<<<< HEAD
     return list.filter(n => (n.title || '').toLowerCase().includes(q) || (n.content || '').replace(/<[^>]+>/g, '').toLowerCase().includes(q) || (n.labels || []).some(lb => lb.name.toLowerCase().includes(q)));
   }, [searchQuery]);
 
@@ -994,12 +1319,25 @@ const Home = () => {
     if (activeLabel) result = result.filter(n => (n.labels || []).some(lb => lb.id === activeLabel));
     return getSortedNotes(applySearch(result));
   }, [notes, editorSharedNotes, activeFilter, activeLabel, searchQuery, applySearch, getSortedNotes]);
+=======
+    return list.filter(n => (n.title || '').toLowerCase().includes(q) || (n.content || '').replace(/<[^>]+>/g,'').toLowerCase().includes(q) || (n.labels || []).some(lb => lb.name.toLowerCase().includes(q)));
+  }, [searchQuery]);
+
+  const getFilteredNotes = useCallback(() => {
+    let result = notes;
+    if (activeFilter === 'pinned') result = result.filter(n => n.isPinned);
+    else if (activeFilter === 'locked') result = result.filter(n => n.password);
+    else if (activeFilter === 'shared') result = result.filter(n => n.shareList?.length > 0 || n.visibility !== 'private');
+    return getSortedNotes(applySearch(result));
+  }, [notes, activeFilter, searchQuery, applySearch, getSortedNotes]);
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
 
   /* ── Actions ── */
   const handleCancel = () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current); setShowModal(false); setFormData(defaultNote); if (editorRef.current) editorRef.current.innerHTML = ''; };
 
   const handleSaveNote = async () => {
     if (!formData.title.trim()) return;
+<<<<<<< HEAD
     // Prevent double-click duplicate creation
     if (isSaving.current) return;
     isSaving.current = true;
@@ -1046,6 +1384,23 @@ const Home = () => {
     finally { isSaving.current = false; setSavingOverlay(false); }
 
     setFormData(defaultNote);
+=======
+    const content = editorRef.current ? editorRef.current.innerHTML : formData.content;
+    const now = new Date().toISOString();
+    const noteToSave = { ...formData, content, updatedAt: now, createdAt: formData.createdAt || now };
+    
+    if (formData.id) {
+      setNotes(notes.map(n => n.id === formData.id ? noteToSave : n));
+      syncUpdateNote(noteToSave);
+    } else {
+      try {
+        const res = await syncCreateNote(noteToSave);
+        if (res.success) setNotes([res.note, ...notes]);
+      } catch (e) { console.error(e); }
+    }
+    
+    setShowModal(false); setFormData(defaultNote);
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
     if (editorRef.current) editorRef.current.innerHTML = '';
   };
 
@@ -1057,13 +1412,21 @@ const Home = () => {
   };
 
   const handleViewNote = note => {
+<<<<<<< HEAD
     if ((note.password || note.has_password) && !unlockedNotes.has(note.id)) {
+=======
+    if (note.password && !unlockedNotes.has(note.id)) {
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
       setPasswordError('');
       setPasswordModal({ mode: 'verify', noteId: note.id, onSuccess: () => { setUnlockedNotes(prev => new Set([...prev, note.id])); setPasswordModal(null); setViewingNote(note); } });
     } else setViewingNote(note);
   };
 
+<<<<<<< HEAD
   const handleDeleteNote = id => setConfirmDelete({ id });
+=======
+  const handleDeleteNote  = id => setConfirmDelete({ id });
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
   const confirmDeleteNote = () => {
     if (!confirmDelete) return;
     const id = confirmDelete.id;
@@ -1082,11 +1445,16 @@ const Home = () => {
   };
 
   const handleNoteAccess = (note, action) => {
+<<<<<<< HEAD
     if (!(note.password || note.has_password) || unlockedNotes.has(note.id)) { action(note); return; }
+=======
+    if (!note.password || unlockedNotes.has(note.id)) { action(note); return; }
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
     setPasswordError('');
     setPasswordModal({ mode: 'verify', noteId: note.id, onSuccess: () => { setUnlockedNotes(prev => new Set([...prev, note.id])); setPasswordModal(null); action(note); } });
   };
 
+<<<<<<< HEAD
   const handlePasswordSubmit = async (payload) => {
     if (!passwordModal) return;
     const noteId = passwordModal.noteId;
@@ -1138,10 +1506,34 @@ const Home = () => {
       body: JSON.stringify({ title: note.title, content: note.content || '', visibility })
     }).catch(e => console.error(e));
     setShareModal(null);
+=======
+  const handlePasswordSubmit = pass => {
+    if (!passwordModal) return;
+    const note = notes.find(n => n.id === passwordModal.noteId);
+    if (passwordModal.mode === 'set') { 
+      const updatedNote = { ...note, password: pass || null };
+      saveNotes(notes.map(n => n.id === passwordModal.noteId ? updatedNote : n)); 
+      syncUpdateNote(updatedNote);
+      setPasswordModal(null); 
+      return; 
+    }
+    if (note && note.password === pass) { setPasswordError(''); passwordModal.onSuccess(); }
+    else setPasswordError('Mật khẩu không đúng!');
+  };
+
+  const handleSaveShare  = (noteId, { shareList, visibility }) => {
+    const note = notes.find(n => n.id === noteId);
+    if (!note) return;
+    const updatedNote = { ...note, shareList, visibility, updatedAt: new Date().toISOString() };
+    saveNotes(notes.map(n => n.id === noteId ? updatedNote : n)); 
+    syncUpdateNote(updatedNote);
+    setShareModal(null); 
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
   };
   const handleRevokeShare = (noteId, email) => {
     const note = notes.find(n => n.id === noteId);
     if (!note) return;
+<<<<<<< HEAD
     const share = (note.shareList || []).find(s => s.email === email);
     if (!share) return;
 
@@ -1150,11 +1542,14 @@ const Home = () => {
       body: JSON.stringify({ note_id: noteId, shared_with: share.shared_with || share.id })
     }).catch(e => console.error(e));
 
+=======
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
     const updatedNote = { ...note, shareList: (note.shareList || []).filter(s => s.email !== email), updatedAt: new Date().toISOString() };
     saveNotes(notes.map(n => n.id === noteId ? updatedNote : n));
     syncUpdateNote(updatedNote);
     if (viewingNote?.id === noteId) setViewingNote(prev => ({ ...prev, shareList: (prev.shareList || []).filter(s => s.email !== email) }));
   };
+<<<<<<< HEAD
 
   const handleUpdateShareRole = async (noteId, email, newRole) => {
     const note = notes.find(n => n.id === noteId);
@@ -1189,6 +1584,8 @@ const Home = () => {
       console.error('Lỗi khi đánh dấu đã xem:', e);
     }
   };
+=======
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
   const handleSaveLabels = (noteId, selectedIds) => {
     const note = notes.find(n => n.id === noteId);
     if (!note) return;
@@ -1206,7 +1603,11 @@ const Home = () => {
 
     // Delete removed labels from API
     for (const id of deletedIds) {
+<<<<<<< HEAD
       apiCall(`/labels/${id}`, { method: 'DELETE' }).catch(e => console.error(e));
+=======
+      apiCall(`/labels/index.php?id=${id}`, { method: 'DELETE' }).catch(e => console.error(e));
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
     }
 
     // Create new labels / update existing
@@ -1215,7 +1616,11 @@ const Home = () => {
       if (!existingIds.has(lb.id)) {
         // New label — create via API
         try {
+<<<<<<< HEAD
           const res = await apiCall('/labels', { method: 'POST', body: JSON.stringify({ name: lb.name, color: lb.color }) });
+=======
+          const res = await apiCall('/labels/index.php', { method: 'POST', body: JSON.stringify({ name: lb.name, color: lb.color }) });
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
           if (res.success) resolvedLabels.push(res.label);
           else resolvedLabels.push(lb);
         } catch (e) { resolvedLabels.push(lb); }
@@ -1223,7 +1628,11 @@ const Home = () => {
         // Check if renamed/recolored
         const orig = allLabels.find(l => l.id === lb.id);
         if (orig && (orig.name !== lb.name || orig.color !== lb.color)) {
+<<<<<<< HEAD
           apiCall(`/labels/${lb.id}`, { method: 'PUT', body: JSON.stringify(lb) }).catch(e => console.error(e));
+=======
+          apiCall('/labels/index.php', { method: 'PUT', body: JSON.stringify(lb) }).catch(e => console.error(e));
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
         }
         resolvedLabels.push(lb);
       }
@@ -1247,8 +1656,13 @@ const Home = () => {
     setLabelEditor(false);
   };
 
+<<<<<<< HEAD
   const handleFormat = cmd => { document.execCommand(cmd, false, null); editorRef.current?.focus(); };
   const applyFontToEditor = font => { setEditorFont(font); setFormData(prev => ({ ...prev, fontFamily: font })); if (editorRef.current) editorRef.current.style.fontFamily = font; };
+=======
+  const handleFormat       = cmd   => { document.execCommand(cmd, false, null); editorRef.current?.focus(); };
+  const applyFontToEditor  = font  => { setEditorFont(font); setFormData(prev => ({ ...prev, fontFamily: font })); if (editorRef.current) editorRef.current.style.fontFamily = font; };
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
   const applyColorToEditor = color => {
     if (!editorRef.current) return; setEditorColor(color); editorRef.current.focus();
     const sel = window.getSelection(), range = document.createRange();
@@ -1268,11 +1682,19 @@ const Home = () => {
   };
 
   /* ── Calendar vars ── */
+<<<<<<< HEAD
   const year = currentDate.getFullYear(), month = currentDate.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const startDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
   const getDateStr = d => `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
   const vnMonths = ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8', 'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12'];
+=======
+  const year          = currentDate.getFullYear(), month = currentDate.getMonth();
+  const daysInMonth   = new Date(year, month + 1, 0).getDate();
+  const startDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
+  const getDateStr    = d => `${year}-${String(month + 1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+  const vnMonths = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
   const expandedNotes = getSortedNotes(notes);
 
   if (!currentUser) return null;
@@ -1280,10 +1702,16 @@ const Home = () => {
   /* ── Sub-components ── */
   const StatusIcons = ({ note }) => (
     <div className="flex items-center gap-1 flex-shrink-0 flex-wrap">
+<<<<<<< HEAD
       {note._isSharedEditor && <span title="Được chia sẻ (có quyền sửa)" className="text-[11px] bg-blue-100 text-blue-700 rounded-full px-1.5 py-px font-black">✏️ {note._ownerInfo}</span>}
       {note.isPinned && <span title="Đã ghim" className="text-[13px]">📌</span>}
       {(note.password || note.has_password) && <span title="Có mật khẩu" className="text-[13px]">🔒</span>}
       {(note.shareList?.length > 0 || note.visibility === 'public') && <span title="Đã chia sẻ" className="text-[13px]">🔗</span>}
+=======
+      {note.isPinned && <span title="Đã ghim" className="text-[13px]">📌</span>}
+      {note.password && <span title="Có mật khẩu" className="text-[13px]">🔒</span>}
+      {(note.shareList?.length > 0 || note.visibility !== 'private') && <span title="Đã chia sẻ" className="text-[13px]">🔗</span>}
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
       {(note.labels || []).slice(0, 3).map(lb => (
         <div key={lb.id} title={lb.name} className="w-2 h-2 rounded-full border border-white/60 flex-shrink-0" style={{ background: lb.color }} />
       ))}
@@ -1294,11 +1722,19 @@ const Home = () => {
   );
 
   const NoteCard = ({ note }) => {
+<<<<<<< HEAD
     const locked = (note.password || note.has_password) && !unlockedNotes.has(note.id);
     const bg = note.color || prefs.defaultColor;
     const fontFam = note.fontFamily || prefs.fontFamily;
     const stripped = (note.content || '').replace(/<[^>]+>/g, '');
     const borderL = note.isPinned ? '#6366f1' : note.isImportant ? '#ef4444' : 'rgba(0,0,0,0.1)';
+=======
+    const locked   = note.password && !unlockedNotes.has(note.id);
+    const bg       = note.color || prefs.defaultColor;
+    const fontFam  = note.fontFamily || prefs.fontFamily;
+    const stripped = (note.content || '').replace(/<[^>]+>/g, '');
+    const borderL  = note.isPinned ? '#6366f1' : note.isImportant ? '#ef4444' : 'rgba(0,0,0,0.1)';
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
 
     if (viewMode === 'list') return (
       <div className={`${CLS_CARD} flex items-start gap-3`}
@@ -1310,7 +1746,11 @@ const Home = () => {
             <StatusIcons note={note} />
           </div>
           {!locked && <p className="text-[13px] text-black/60 m-0 line-clamp-2" style={{ fontFamily: fontFam }}>{stripped}</p>}
+<<<<<<< HEAD
           {locked && <p className="text-[13px] text-black/40 italic m-0">🔒 Nội dung được bảo vệ</p>}
+=======
+          {locked  && <p className="text-[13px] text-black/40 italic m-0">🔒 Nội dung được bảo vệ</p>}
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
           {(note.labels || []).length > 0 && (
             <div className="flex flex-wrap gap-1 mt-1.5">
               {note.labels.map(lb => <span key={lb.id} className="text-[11px] font-extrabold px-2 py-px rounded-full" style={{ background: lb.color + '25', color: lb.color, border: `1px solid ${lb.color}50` }}>{lb.name}</span>)}
@@ -1318,6 +1758,7 @@ const Home = () => {
           )}
         </div>
         <div className="flex flex-col gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
+<<<<<<< HEAD
           {note._isSharedEditor ? (
             /* Shared editor note: only View + Edit */
             <>
@@ -1345,6 +1786,17 @@ const Home = () => {
               <button onClick={() => handleDeleteNote(note.id)} className={`${CLS_IBTN_SM} hover:!bg-red-100`} title="Xóa">🗑️</button>
             </>
           )}
+=======
+          <button onClick={() => togglePin(note.id)} className={CLS_IBTN_SM} title={note.isPinned ? 'Bỏ ghim' : 'Ghim'}>{note.isPinned ? '📌' : '📍'}</button>
+          <button onClick={() => handleNoteAccess(note, handleEditNote)} className={CLS_IBTN_SM} title="Sửa">✏️</button>
+          <button onClick={() => setLabelModal({ noteId: note.id })} className={CLS_IBTN_SM} title="Nhãn">🏷️</button>
+          <button onClick={() => setShareModal(note)} className={CLS_IBTN_SM} title="Chia sẻ">🔗</button>
+          <button onClick={() => {
+            const sp = () => setPasswordModal({ mode: 'set', noteId: note.id });
+            if (note.password && !unlockedNotes.has(note.id)) setPasswordModal({ mode: 'verify', noteId: note.id, onSuccess: () => { setUnlockedNotes(prev => new Set([...prev, note.id])); setPasswordModal(null); sp(); } }); else sp();
+          }} className={CLS_IBTN_SM} title="Mật khẩu" style={{ background: note.password ? '#fef3c7' : undefined }}>🔒</button>
+          <button onClick={() => handleDeleteNote(note.id)} className={`${CLS_IBTN_SM} hover:!bg-red-100`} title="Xóa">🗑️</button>
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
         </div>
       </div>
     );
@@ -1364,8 +1816,13 @@ const Home = () => {
           {locked
             ? <p className="text-[13px] text-black/40 italic mb-2">🔒 Nội dung được bảo vệ</p>
             : <div className="rich-text-content text-[13px] text-black/65 line-clamp-3 mb-2"
+<<<<<<< HEAD
               style={{ fontFamily: fontFam }}
               dangerouslySetInnerHTML={{ __html: note.content || '' }} />
+=======
+                style={{ fontFamily: fontFam }}
+                dangerouslySetInnerHTML={{ __html: note.content || '' }} />
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
           }
           {!locked && note.attachments?.some(a => a.type?.startsWith('image/')) && (
             <div className="flex gap-1.5 mb-2 flex-wrap">
@@ -1383,6 +1840,7 @@ const Home = () => {
         <div className="pt-2.5 border-t border-black/[.08] flex justify-between items-center mt-2">
           <div className="flex gap-1" onClick={e => e.stopPropagation()}>
             <button onClick={() => handleViewNote(note)} className={CLS_IBTN_SM} title="Xem">👁️</button>
+<<<<<<< HEAD
             {note._isSharedEditor ? (
               /* Shared editor note: only View + Edit */
               <button onClick={() => handleNoteAccess(note, handleEditNote)} className={CLS_IBTN_SM} title="Sửa">✏️</button>
@@ -1408,6 +1866,17 @@ const Home = () => {
                 <button onClick={() => handleDeleteNote(note.id)} className={`${CLS_IBTN_SM} hover:!bg-red-100`} title="Xóa">🗑️</button>
               </>
             )}
+=======
+            <button onClick={() => togglePin(note.id)} className={CLS_IBTN_SM} title={note.isPinned ? 'Bỏ ghim' : 'Ghim'}>{note.isPinned ? '📌' : '📍'}</button>
+            <button onClick={() => setLabelModal({ noteId: note.id })} className={CLS_IBTN_SM} title="Nhãn">🏷️</button>
+            <button onClick={() => setShareModal(note)} className={CLS_IBTN_SM} title="Chia sẻ">🔗</button>
+            <button onClick={() => {
+              const sp = () => setPasswordModal({ mode: 'set', noteId: note.id });
+              if (note.password && !unlockedNotes.has(note.id)) setPasswordModal({ mode: 'verify', noteId: note.id, onSuccess: () => { setUnlockedNotes(prev => new Set([...prev, note.id])); setPasswordModal(null); sp(); } }); else sp();
+            }} className={CLS_IBTN_SM} style={{ background: note.password ? '#fef3c7' : undefined }} title="Mật khẩu">🔒</button>
+            <button onClick={() => handleNoteAccess(note, handleEditNote)} className={CLS_IBTN_SM} title="Sửa">✏️</button>
+            <button onClick={() => handleDeleteNote(note.id)} className={`${CLS_IBTN_SM} hover:!bg-red-100`} title="Xóa">🗑️</button>
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
           </div>
         </div>
       </div>
@@ -1429,7 +1898,11 @@ const Home = () => {
     </div>
   );
 
+<<<<<<< HEAD
   const sharedByMe = getSortedNotes(notes.filter(n => n.shareList?.length > 0 || n.visibility === 'public'));
+=======
+  const sharedByMe = getSortedNotes(notes.filter(n => n.shareList?.length > 0 || n.visibility !== 'private'));
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
 
   /* ══════════════════════════════════════════════════════════
      RENDER
@@ -1437,6 +1910,7 @@ const Home = () => {
   return (
     <div className="flex min-h-screen items-start overflow-x-hidden bg-indigo-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
 
+<<<<<<< HEAD
       {/* ═══ Saving Overlay ═══ */}
       {savingOverlay && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30 backdrop-blur-sm">
@@ -1447,6 +1921,8 @@ const Home = () => {
         </div>
       )}
 
+=======
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
       {/* ── Global styles (minimal — only what Tailwind can't do) ── */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
@@ -1495,6 +1971,7 @@ const Home = () => {
         {/* Nav items */}
         <div className="p-2 flex-1 overflow-y-auto flex flex-col gap-0.5">
           {[
+<<<<<<< HEAD
             { view: 'calendar', icon: '📅', label: 'Lịch Cá Nhân' },
             { view: 'all-notes', icon: '📂', label: 'Tất cả Ghi chú' },
             {
@@ -1509,6 +1986,16 @@ const Home = () => {
             <button key={item.view}
               onClick={() => { setActiveView(item.view); if (window.innerWidth < 1024) setIsSidebarOpen(false); }}
               className={`relative w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all font-extrabold text-sm border-0 cursor-pointer text-left font-[inherit] ${activeView === item.view ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/30' : 'bg-transparent text-slate-400 dark:text-slate-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-500'}`}>
+=======
+            { view: 'calendar',  icon: '📅', label: 'Lịch Cá Nhân'   },
+            { view: 'all-notes', icon: '📂', label: 'Tất cả Ghi chú' },
+            { view: 'shared',    icon: '🔗', label: 'Đã chia sẻ', badge: sharedByMe.length },
+            { view: 'settings',  icon: '⚙️', label: 'Cài đặt'        },
+          ].map(item => (
+            <button key={item.view}
+              onClick={() => { setActiveView(item.view); if (window.innerWidth < 1024) setIsSidebarOpen(false); }}
+              className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all font-extrabold text-sm border-0 cursor-pointer text-left font-[inherit] ${activeView === item.view ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/30' : 'bg-transparent text-slate-400 dark:text-slate-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-500'}`}>
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
               <span className="text-base">{item.icon}</span>
               <span className="flex-1">{item.label}</span>
               {item.badge > 0 && (
@@ -1516,9 +2003,12 @@ const Home = () => {
                   {item.badge}
                 </span>
               )}
+<<<<<<< HEAD
               {item.hasNew && (
                 <span className="absolute left-6 top-3 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-slate-800" />
               )}
+=======
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
             </button>
           ))}
 
@@ -1577,7 +2067,11 @@ const Home = () => {
             <div className={`bg-white dark:bg-slate-800 rounded-[18px] shadow-md p-3.5 border border-slate-200 dark:border-slate-700 ${isFlipping ? 'cal-flip' : ''}`}>
               {/* Day headers */}
               <div className="grid grid-cols-7 gap-1 mb-1.5">
+<<<<<<< HEAD
                 {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((d, i) => (
+=======
+                {['T2','T3','T4','T5','T6','T7','CN'].map((d, i) => (
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
                   <div key={d} className={`text-center font-black text-[11px] py-0.5 ${i === 6 ? 'text-red-500' : 'text-slate-400'}`}>{d}</div>
                 ))}
               </div>
@@ -1585,11 +2079,19 @@ const Home = () => {
               <div className="grid grid-cols-7 gap-1">
                 {Array.from({ length: startDayIndex }).map((_, i) => <div key={`e${i}`} className="min-h-[78px]" />)}
                 {Array.from({ length: daysInMonth }).map((_, i) => {
+<<<<<<< HEAD
                   const day = i + 1, dateStr = getDateStr(day);
                   const notesToday = expandedNotes.filter(n => (n.createdAt || n.created_at || n.updatedAt || n.updated_at || '').slice(0, 10) === dateStr);
                   const holidays = getHolidaysForDate(dateStr);
                   const isToday = new Date().toISOString().slice(0, 10) === dateStr;
                   const isSun = new Date(year, month, day).getDay() === 0;
+=======
+                  const day      = i + 1, dateStr = getDateStr(day);
+                  const notesToday = expandedNotes.filter(n => (n.updatedAt || n.createdAt || '').slice(0, 10) === dateStr);
+                  const holidays   = getHolidaysForDate(dateStr);
+                  const isToday    = new Date().toISOString().slice(0, 10) === dateStr;
+                  const isSun      = new Date(year, month, day).getDay() === 0;
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
                   return (
                     <div key={day}
                       onClick={() => setSelectedDayNotes({ day, dateStr, notes: notesToday, holidays })}
@@ -1660,6 +2162,7 @@ const Home = () => {
                   )}
                 </button>
               ))}
+<<<<<<< HEAD
               {allLabels.map(lb => {
                 const isActive = activeLabel === lb.id;
                 return (
@@ -1672,6 +2175,16 @@ const Home = () => {
                   </button>
                 );
               })}
+=======
+              {allLabels.map(lb => (
+                <button key={`lb-${lb.id}`}
+                  onClick={() => { setSearchQuery(lb.name); setDisplayQuery(lb.name); }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold cursor-pointer transition-all border whitespace-nowrap font-[inherit]"
+                  style={{ borderColor: lb.color + '60', background: lb.color + '15', color: lb.color }}>
+                  <div className="w-2 h-2 rounded-full" style={{ background: lb.color }} />{lb.name}
+                </button>
+              ))}
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
             </div>
 
             <NoteGrid noteList={getFilteredNotes()} />
@@ -1683,6 +2196,7 @@ const Home = () => {
           <div className="fade-up">
             <h1 className={`text-[26px] font-black mb-4 ${isSidebarOpen ? '' : 'pl-11'}`}>🔗 Đã chia sẻ</h1>
             <div className="flex gap-1.5 mb-4 bg-white dark:bg-slate-800 p-1 rounded-xl w-fit border border-slate-200 dark:border-slate-700">
+<<<<<<< HEAD
               {[
                 { key: 'by-me', label: 'Tôi chia sẻ', icon: '📤', count: sharedByMe.length },
                 { key: 'with-me', label: 'Được chia sẻ', icon: '📥', count: sharedWithMe.length, hasUnseen: sharedWithMe.some(n => !n.is_seen) }
@@ -1694,6 +2208,13 @@ const Home = () => {
                   {tab.hasUnseen && (
                     <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-slate-800" />
                   )}
+=======
+              {[{ key: 'by-me', label: 'Tôi chia sẻ', icon: '📤', count: sharedByMe.length }, { key: 'with-me', label: 'Được chia sẻ', icon: '📥', count: 0 }].map(tab => (
+                <button key={tab.key} onClick={() => setSharedSubTab(tab.key)}
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg border-0 cursor-pointer font-extrabold text-sm transition-all font-[inherit] ${sharedSubTab === tab.key ? 'bg-indigo-500 text-white' : 'bg-transparent text-slate-400 hover:text-indigo-500'}`}>
+                  <span>{tab.icon}</span><span>{tab.label}</span>
+                  <span className={`text-[10px] px-1.5 py-px rounded-full font-[inherit] ${sharedSubTab === tab.key ? 'bg-white/25' : 'bg-slate-100 dark:bg-slate-700'}`}>{tab.count}</span>
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
                 </button>
               ))}
             </div>
@@ -1701,14 +2222,22 @@ const Home = () => {
             {sharedSubTab === 'by-me' && (
               sharedByMe.length === 0
                 ? <div className="text-center py-16 px-5 text-slate-400">
+<<<<<<< HEAD
                   <div className="text-5xl opacity-35 mb-3">🔗</div>
                   <p className="font-black text-lg m-0">Chưa chia sẻ note nào</p>
                   <p className="text-sm mt-1.5">Mở note và nhấn 🔗 để chia sẻ!</p>
                 </div>
+=======
+                    <div className="text-5xl opacity-35 mb-3">🔗</div>
+                    <p className="font-black text-lg m-0">Chưa chia sẻ note nào</p>
+                    <p className="text-sm mt-1.5">Mở note và nhấn 🔗 để chia sẻ!</p>
+                  </div>
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
                 : <NoteGrid noteList={sharedByMe} />
             )}
 
             {sharedSubTab === 'with-me' && (
+<<<<<<< HEAD
               sharedWithMe.length === 0
                 ? <div className="text-center py-16 px-5 text-slate-400">
                   <div className="text-5xl opacity-35 mb-3">📥</div>
@@ -1757,6 +2286,13 @@ const Home = () => {
                     </div>
                   ))}
                 </div>
+=======
+              <div className="text-center py-16 px-5 text-slate-400">
+                <div className="text-5xl opacity-35 mb-3">📥</div>
+                <p className="font-black text-lg m-0">Tính năng đang phát triển</p>
+                <p className="text-sm mt-1.5">Note được chia sẻ với bạn sẽ xuất hiện ở đây</p>
+              </div>
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
             )}
           </div>
         )}
@@ -1819,10 +2355,17 @@ const Home = () => {
               <div className="bg-white dark:bg-slate-800 rounded-[18px] p-4 shadow-sm border border-slate-200 dark:border-slate-700">
                 <span className={CLS_LABEL}>📅 Hiển thị ngày lễ trên lịch</span>
                 {[
+<<<<<<< HEAD
                   { key: 'showVietnameseHolidays', label: 'Ngày lễ Việt Nam', desc: 'Quốc khánh, 30/4, 1/5…', icon: '🇻🇳' },
                   { key: 'showInternationalHolidays', label: 'Ngày lễ quốc tế', desc: 'Valentine, Halloween, Giáng Sinh…', icon: '🌍' },
                   { key: 'showLunarHolidays', label: 'Lễ âm lịch', desc: 'Rằm, Vu Lan, Trung Thu…', icon: '🌕' },
                   { key: 'showTet', label: 'Tết Nguyên Đán', desc: 'Mùng 1, 2, 3, Giao Thừa, Ông Táo', icon: '🧧' },
+=======
+                  { key: 'showVietnameseHolidays',  label: 'Ngày lễ Việt Nam', desc: 'Quốc khánh, 30/4, 1/5…',              icon: '🇻🇳' },
+                  { key: 'showInternationalHolidays',label: 'Ngày lễ quốc tế',  desc: 'Valentine, Halloween, Giáng Sinh…', icon: '🌍' },
+                  { key: 'showLunarHolidays',        label: 'Lễ âm lịch',       desc: 'Rằm, Vu Lan, Trung Thu…',           icon: '🌕' },
+                  { key: 'showTet',                  label: 'Tết Nguyên Đán',   desc: 'Mùng 1, 2, 3, Giao Thừa, Ông Táo', icon: '🧧' },
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
                 ].map(s => (
                   <div key={s.key} className="flex items-center justify-between py-2.5 border-b border-slate-100 dark:border-slate-700 last:border-0">
                     <div className="flex items-center gap-2.5">
@@ -1849,6 +2392,7 @@ const Home = () => {
                 {allLabels.length === 0
                   ? <div className="text-slate-400 text-sm text-center py-3.5">Chưa có nhãn nào</div>
                   : <div className="flex flex-wrap gap-1.5">
+<<<<<<< HEAD
                     {allLabels.map(lb => (
                       <span key={lb.id} className="text-xs font-extrabold px-3 py-1 rounded-full"
                         style={{ background: lb.color + '25', color: lb.color, border: `1px solid ${lb.color}50` }}>
@@ -1856,6 +2400,15 @@ const Home = () => {
                       </span>
                     ))}
                   </div>
+=======
+                      {allLabels.map(lb => (
+                        <span key={lb.id} className="text-xs font-extrabold px-3 py-1 rounded-full"
+                          style={{ background: lb.color + '25', color: lb.color, border: `1px solid ${lb.color}50` }}>
+                          {lb.name}
+                        </span>
+                      ))}
+                    </div>
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
                 }
               </div>
 
@@ -1887,8 +2440,13 @@ const Home = () => {
                   <button onClick={() => {
                     const data = JSON.stringify({ notes, labels: allLabels, prefs, settings, exportedAt: new Date().toISOString() }, null, 2);
                     const blob = new Blob([data], { type: 'application/json' });
+<<<<<<< HEAD
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a'); a.href = url; a.download = `notes_backup_${Date.now()}.json`; a.click();
+=======
+                    const url  = URL.createObjectURL(blob);
+                    const a    = document.createElement('a'); a.href = url; a.download = `notes_backup_${Date.now()}.json`; a.click();
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
                     URL.revokeObjectURL(url);
                   }} className={`${CLS_BTN_SEC} text-xs`}>📤 Xuất dữ liệu (JSON)</button>
                   <label className={`${CLS_BTN_SEC} text-xs cursor-pointer inline-flex items-center gap-1.5`}>
@@ -1900,7 +2458,11 @@ const Home = () => {
                           const d = JSON.parse(ev.target.result);
                           if (d.notes) saveNotes(d.notes);
                           if (d.labels) setAllLabels(d.labels);
+<<<<<<< HEAD
                           if (d.prefs) setPrefs(d.prefs);
+=======
+                          if (d.prefs)  setPrefs(d.prefs);
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
                           alert('✅ Nhập dữ liệu thành công!');
                         } catch { alert('❌ File không hợp lệ!'); }
                       }; r.readAsText(f); e.target.value = '';
@@ -1953,7 +2515,11 @@ const Home = () => {
               ) : (
                 <div className="flex flex-col gap-2.5">
                   {selectedDayNotes.notes.map(note => {
+<<<<<<< HEAD
                     const locked = (note.password || note.has_password) && !unlockedNotes.has(note.id);
+=======
+                    const locked = note.password && !unlockedNotes.has(note.id);
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
                     return (
                       <div key={note.id}
                         className="rounded-2xl px-3.5 py-3 flex items-start gap-2.5 cursor-pointer"
@@ -1989,9 +2555,14 @@ const Home = () => {
 
             <div className="pt-3.5 border-t border-slate-200 dark:border-slate-700 mt-3">
               <button className={`${CLS_BTN_PRI} w-full py-3`} onClick={() => {
+<<<<<<< HEAD
                 const dayDate = selectedDayNotes.dateStr + 'T12:00:00.000Z';
                 setSelectedDayNotes(null);
                 setTimeout(() => { setFormData({ ...defaultNote, createdAt: dayDate }); setEditorFont(prefs.fontFamily); setEditorColor('#1f2937'); setShowModal(true); }, 80);
+=======
+                setSelectedDayNotes(null);
+                setTimeout(() => { setFormData({ ...defaultNote }); setEditorFont(prefs.fontFamily); setEditorColor('#1f2937'); setShowModal(true); }, 80);
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
               }}>✍️ Tạo ghi chú cho ngày này</button>
             </div>
           </div>
@@ -2018,7 +2589,11 @@ const Home = () => {
 
             {/* Toolbar */}
             <div className="px-3.5 py-2 border-b border-slate-200 dark:border-slate-700 flex flex-wrap gap-1.5 bg-slate-50 dark:bg-slate-900/50 flex-shrink-0">
+<<<<<<< HEAD
               {[['B', 'bold'], ['I', 'italic'], ['U', 'underline'], ['S', 'strikeThrough']].map(([label, cmd]) => (
+=======
+              {[['B','bold'],['I','italic'],['U','underline'],['S','strikeThrough']].map(([label, cmd]) => (
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
                 <button key={cmd} onMouseDown={e => { e.preventDefault(); handleFormat(cmd); }}
                   className={`${CLS_ICON_BTN} w-7 h-7 text-[13px]`}
                   style={{ fontWeight: label === 'B' ? 900 : 600, fontStyle: label === 'I' ? 'italic' : 'normal', textDecoration: label === 'U' ? 'underline' : label === 'S' ? 'line-through' : 'none' }}>
@@ -2026,7 +2601,11 @@ const Home = () => {
                 </button>
               ))}
               <div className="w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
+<<<<<<< HEAD
               {[['•≡', 'insertUnorderedList'], ['1≡', 'insertOrderedList']].map(([label, cmd]) => (
+=======
+              {[['•≡','insertUnorderedList'],['1≡','insertOrderedList']].map(([label, cmd]) => (
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
                 <button key={cmd} onMouseDown={e => { e.preventDefault(); handleFormat(cmd); }} className={`${CLS_ICON_BTN} w-7 h-7 text-xs`}>{label}</button>
               ))}
               <div className="w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
@@ -2036,7 +2615,11 @@ const Home = () => {
               </select>
               <select onChange={e => { document.execCommand('fontSize', false, e.target.value); editorRef.current?.focus(); }} defaultValue="3"
                 className={`${CLS_INPUT} text-[11px] py-0 px-1 w-14`}>
+<<<<<<< HEAD
                 {[1, 2, 3, 4, 5, 6, 7].map(s => <option key={s} value={s}>{[9, 10, 12, 14, 18, 24, 36][s - 1]}px</option>)}
+=======
+                {[1,2,3,4,5,6,7].map(s => <option key={s} value={s}>{[9,10,12,14,18,24,36][s-1]}px</option>)}
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
               </select>
               <div className="flex gap-1 items-center">
                 {TEXT_COLORS.map(c => (
@@ -2091,6 +2674,7 @@ const Home = () => {
 
               <div className="flex gap-1.5 flex-wrap">
                 <button onClick={() => setFormData(p => ({ ...p, isPinned: !p.isPinned }))}
+<<<<<<< HEAD
                   className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border-0 cursor-pointer text-xs font-extrabold font-[inherit] transition-colors ${formData.isPinned ? 'bg-amber-100 text-amber-800 dark:bg-amber-800 dark:text-amber-100' : 'bg-white dark:bg-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
                   📌 Ghim
                 </button>
@@ -2121,6 +2705,24 @@ const Home = () => {
                 <button onClick={handleSaveNote} disabled={isSaving.current} className={`${CLS_BTN_PRI} text-xs px-4 py-1.5`}>
                   {isSaving.current ? '⏳ Đang lưu...' : '💾 Lưu'}
                 </button>
+=======
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border-0 cursor-pointer text-xs font-extrabold font-[inherit] transition-colors ${formData.isPinned ? 'bg-amber-100' : 'bg-white dark:bg-slate-800 hover:bg-slate-100'}`}>
+                  📌 Ghim
+                </button>
+                <button onClick={() => setLabelModal({ noteId: formData.id })}
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border-0 cursor-pointer text-xs font-extrabold font-[inherit] transition-colors ${formData.labels?.length ? 'bg-violet-100' : 'bg-white dark:bg-slate-800 hover:bg-slate-100'}`}>
+                  🏷️ {formData.labels?.length > 0 ? `${formData.labels.length} nhãn` : 'Nhãn'}
+                </button>
+                <label className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg cursor-pointer text-xs font-extrabold bg-white dark:bg-slate-800 hover:bg-slate-100 font-[inherit]">
+                  📎 Đính kèm
+                  <input type="file" multiple className="hidden" onChange={handleAttachmentAdd} accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt" />
+                </label>
+                <button onClick={() => setPasswordModal({ mode: 'set', noteId: formData.id || 'new' })}
+                  className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border-0 cursor-pointer text-xs font-extrabold font-[inherit] transition-colors ${formData.password ? 'bg-amber-100' : 'bg-white dark:bg-slate-800 hover:bg-slate-100'}`}>
+                  🔒 {formData.password ? 'Đổi MK' : 'Đặt MK'}
+                </button>
+                <button onClick={handleSaveNote} className={`${CLS_BTN_PRI} text-xs px-4 py-1.5`}>💾 Lưu</button>
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
               </div>
             </div>
           </div>
@@ -2131,9 +2733,13 @@ const Home = () => {
       {viewingNote && (
         <ViewNoteModal note={viewingNote} onClose={() => setViewingNote(null)}
           onEdit={() => { setViewingNote(null); handleEditNote(viewingNote); }}
+<<<<<<< HEAD
           onRevokeShare={handleRevokeShare}
           onUpdateShareRole={handleUpdateShareRole}
           currentUserEmail={currentUser} />
+=======
+          onRevokeShare={handleRevokeShare} />
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
       )}
 
       {shareModal && (
@@ -2143,7 +2749,16 @@ const Home = () => {
 
       {passwordModal && (
         <PasswordModal mode={passwordModal.mode} error={passwordError}
+<<<<<<< HEAD
           onSubmit={payload => handlePasswordSubmit(payload)}
+=======
+          onSubmit={pass => {
+            if (passwordModal.mode === 'set') {
+              if (passwordModal.noteId === 'new' || !passwordModal.noteId) { setFormData(p => ({ ...p, password: pass || null })); setPasswordModal(null); }
+              else handlePasswordSubmit(pass);
+            } else handlePasswordSubmit(pass);
+          }}
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
           onCancel={() => { setPasswordModal(null); setPasswordError(''); }} />
       )}
 
