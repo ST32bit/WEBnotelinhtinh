@@ -5,6 +5,10 @@ export const apiCall = async (endpoint, options = {}) => {
   
   const defaultHeaders = {
     'Content-Type': 'application/json',
+<<<<<<< HEAD
+    'Accept': 'application/json',
+=======
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
   };
 
@@ -18,10 +22,56 @@ export const apiCall = async (endpoint, options = {}) => {
 
   try {
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
+<<<<<<< HEAD
+    
+    // Handle 401 Unauthorized — token expired or invalid
+    if (response.status === 401) {
+      // Clear stored auth data
+      localStorage.removeItem('token');
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('displayName');
+      localStorage.removeItem('isActive');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('currentUser');
+      sessionStorage.removeItem('displayName');
+      sessionStorage.removeItem('isActive');
+
+      // Only redirect if not already on auth pages
+      const authPages = ['/login', '/register', '/activate', '/reset-password', '/shared'];
+      if (!authPages.some(p => window.location.pathname.includes(p))) {
+        window.location.href = '/login';
+        return;
+      }
+
+      // For auth pages, just parse and throw the error normally
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.error || data.message || 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
+    }
+
+    // Safely parse response - handle non-JSON responses
+    const contentType = response.headers.get('content-type');
+    let data;
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const text = await response.text();
+      console.error('Non-JSON response:', text);
+      throw new Error('Máy chủ trả về lỗi không mong muốn. Kiểm tra lại backend.');
+    }
+
+    if (!response.ok) {
+      // Handle Laravel validation errors (422)
+      if (data.errors) {
+        const firstError = Object.values(data.errors)[0];
+        throw new Error(Array.isArray(firstError) ? firstError[0] : firstError);
+      }
+      throw new Error(data.error || data.message || 'Có lỗi xảy ra từ máy chủ');
+=======
     const data = await response.json();
 
     if (!response.ok) {
       throw new Error(data.error || 'Có lỗi xảy ra từ máy chủ');
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
     }
 
     return data;

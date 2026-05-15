@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiCall } from '../api';
 
 //Các hàm tính âm lịch
 function INT(d) { return Math.floor(d); }
@@ -144,7 +143,7 @@ const CLS_LABEL = 'text-[11px] font-black text-slate-400 uppercase tracking-wide
 const CLS_CARD = 'rounded-2xl p-3.5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl overflow-hidden';
 
 
-//PASSWORD MODAL
+//password mođal, dùng chung cho đặt mật khẩu mới và nhập mật khẩu cũ để mở note
 const PasswordModal = ({ mode, onSubmit, onCancel, error }) => {
   const [pass, setPass] = useState('');
   return (
@@ -177,10 +176,7 @@ const PasswordModal = ({ mode, onSubmit, onCancel, error }) => {
     </div>
   );
 };
-
-/* ════════════════════════════════════════════════════════════
-   SHARE MODAL
-════════════════════════════════════════════════════════════ */
+//share modal, chia sẻ note với người khác qua email, thiết lập quyền xem/sửa và chế độ hiển thị của note khi chia sẻ
 const ShareModal = ({ note, onClose, onSave }) => {
   const [shareList, setShareList] = useState(note.shareList || []);
   const [email, setEmail]         = useState('');
@@ -192,7 +188,7 @@ const ShareModal = ({ note, onClose, onSave }) => {
     if (!e2 || !/\S+@\S+\.\S+/.test(e2) || shareList.find(s => s.email === e2)) return;
     setShareList([...shareList, { email: e2, role }]); setEmail('');
   };
-
+//vis: chế độ hiển thị
   const visOptions = [
     { v: 'private', icon: '🔒', label: 'Riêng tư' },
     { v: 'link',    icon: '🔗', label: 'Qua link'  },
@@ -226,33 +222,51 @@ const ShareModal = ({ note, onClose, onSave }) => {
             <input type="email" placeholder="Email..." value={email} onChange={e => setEmail(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && addShare()} className={`${CLS_INPUT} flex-1`} />
             <select value={role} onChange={e => setRole(e.target.value)}
-              className={`${CLS_INPUT} w-24 text-xs`}>
+              className={`${CLS_INPUT} w-24 text-xs max-w-24 bg-white dark:bg-slate-700 cursor-pointer`}>
               <option value="viewer">👁️ Xem</option>
               <option value="editor">✏️ Sửa</option>
             </select>
             <button onClick={addShare} className={`${CLS_BTN_PRI} px-3.5`}>+</button>
           </div>
-          <div className="max-h-40 overflow-y-auto flex flex-col gap-1.5">
-            {shareList.map(s => (
-              <div key={s.email} className="flex items-center gap-2.5 px-3 py-2 bg-slate-50 dark:bg-slate-700 rounded-xl">
-                <div className="w-7 h-7 rounded-lg bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center font-black text-xs text-indigo-600 dark:text-indigo-300">
-                  {s.email[0].toUpperCase()}
-                </div>
-                <span className="flex-1 text-[13px] font-bold truncate">{s.email}</span>
-                <select value={s.role}
-                  onChange={e => setShareList(shareList.map(x => x.email === s.email ? { ...x, role: e.target.value } : x))}
-                  className="text-[11px] font-extrabold border-0 bg-transparent text-slate-700 dark:text-slate-300 cursor-pointer font-[inherit]">
-                  <option value="viewer">👁️ Xem</option>
-                  <option value="editor">✏️ Sửa</option>
-                </select>
-                <button onClick={() => setShareList(shareList.filter(x => x.email !== s.email))}
-                  className="w-5 h-5 rounded-md bg-red-100 border-0 text-red-600 cursor-pointer font-black text-[10px] font-[inherit]">✕</button>
-              </div>
-            ))}
-            {shareList.length === 0 && (
-              <div className="text-center text-slate-400 text-[13px] py-2.5">Chưa chia sẻ với ai</div>
-            )}
-          </div>
+<div className="max-h-40 overflow-y-auto flex flex-col gap-1.5 pr-1">
+  {shareList.map(s => (
+    <div key={s.email} className="flex items-center gap-2.5 px-3 py-2 bg-slate-50 dark:bg-slate-700 rounded-xl">
+      
+      {/* Avatar: Thêm shrink-0 */}
+      <div className="w-7 h-7 shrink-0 rounded-lg bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center font-black text-xs text-indigo-600 dark:text-indigo-300">
+        {s.email[0].toUpperCase()}
+      </div>
+      
+      {/* Email: Thêm min-w-0 là cực kỳ quan trọng để truncate hoạt động trong flex */}
+      <span className="flex-1 min-w-0 text-[13px] font-bold truncate">
+        {s.email}
+      </span>
+      
+      {/* Select: Thêm shrink-0 và bỏ viền focus */}
+      <select 
+        value={s.role}
+        onChange={e => setShareList(shareList.map(x => x.email === s.email ? { ...x, role: e.target.value } : x))}
+        className="shrink-0 text-[11px] font-extrabold border-0 bg-transparent text-slate-700 dark:text-slate-300 cursor-pointer focus:ring-0 outline-none">
+        <option value="viewer">👁️ Xem</option>
+        <option value="editor">✏️ Sửa</option>
+      </select>
+      
+      {/* Button: Thêm shrink-0, flex canh giữa dấu X, thêm hover & dark mode */}
+      <button 
+        onClick={() => setShareList(shareList.filter(x => x.email !== s.email))}
+        className="w-5 h-5 shrink-0 flex items-center justify-center rounded-md bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 cursor-pointer font-black text-[10px] transition-colors hover:bg-red-200 dark:hover:bg-red-900/60">
+        ✕
+      </button>
+      
+    </div>
+  ))}
+  
+  {shareList.length === 0 && (
+    <div className="text-center text-slate-400 text-[13px] py-2.5">
+      Chưa chia sẻ với ai
+    </div>
+  )}
+</div>
         </div>
 
         <button onClick={() => onSave({ shareList, visibility })} className={`${CLS_BTN_PRI} w-full py-3`}>
@@ -263,9 +277,7 @@ const ShareModal = ({ note, onClose, onSave }) => {
   );
 };
 
-/* ════════════════════════════════════════════════════════════
-   VIEW NOTE MODAL
-════════════════════════════════════════════════════════════ */
+//modal xem note với đầy đủ thông tin, nội dung, tệp đính kèm và chi tiết chia sẻ, có nút sửa và đóng
 const ViewNoteModal = ({ note, onClose, onEdit, onRevokeShare }) => (
   <div className={CLS_OVERLAY} onClick={onClose}>
     <div
@@ -274,15 +286,15 @@ const ViewNoteModal = ({ note, onClose, onEdit, onRevokeShare }) => (
       onClick={e => e.stopPropagation()}
     >
       {/* Header */}
-      <div className="flex justify-between items-start mb-4 pb-3.5 border-b border-black/10">
-        <div className="flex-1 pr-3">
-          <div className="flex flex-wrap gap-1.5 mb-2">
-            {note.isPinned && <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700">📌 Đã ghim</span>}
-            {note.password && <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800">🔒 Có mật khẩu</span>}
-            {(note.shareList?.length > 0 || note.visibility !== 'private') && (
-              <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700">🔗 Đã chia sẻ</span>
-            )}
-            {(note.labels || []).map(lb => (
+        <div className="flex justify-between items-start mb-4 pb-3.5 border-b border-black/10">
+          <div className="flex-1 pr-3">
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {note.isPinned && <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700">📌 Đã ghim</span>}
+              {note.password && <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800">🔒 Có mật khẩu</span>}
+              {(note.shareList?.length > 0 || note.visibility !== 'private') && (
+                <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700">🔗 Đã chia sẻ</span>
+              )}
+              {(note.labels || []).map(lb => (
               <span key={lb.id} className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full"
                 style={{ background: lb.color + '30', color: lb.color, border: `1px solid ${lb.color}50` }}>
                 {lb.name}
@@ -303,7 +315,7 @@ const ViewNoteModal = ({ note, onClose, onEdit, onRevokeShare }) => (
         </div>
       </div>
 
-      {/* Content */}
+      {/* Nội dung */}
       <div className="flex-1 overflow-y-auto">
         <div
           className="rich-text-content leading-relaxed text-slate-800"
@@ -311,7 +323,7 @@ const ViewNoteModal = ({ note, onClose, onEdit, onRevokeShare }) => (
           dangerouslySetInnerHTML={{ __html: note.content || '<p style="color:#9ca3af;font-style:italic">Chưa có nội dung</p>' }}
         />
 
-        {/* Attachments */}
+        {/* Đính kèm */}
         {note.attachments?.length > 0 && (
           <div className="mt-4 pt-3.5 border-t border-black/10">
             <span className={CLS_LABEL}>📎 Tệp đính kèm ({note.attachments.length})</span>
@@ -330,7 +342,7 @@ const ViewNoteModal = ({ note, onClose, onEdit, onRevokeShare }) => (
           </div>
         )}
 
-        {/* Sharing detail */}
+        {/* Chi tiết chia sẻ */}
         {(note.shareList?.length > 0 || note.visibility !== 'private') && (
           <div className="mt-4 pt-3.5 border-t border-black/10">
             <span className={CLS_LABEL}>🔗 Chi tiết chia sẻ</span>
@@ -363,11 +375,10 @@ const ViewNoteModal = ({ note, onClose, onEdit, onRevokeShare }) => (
   </div>
 );
 
-/* ════════════════════════════════════════════════════════════
-   LABEL MANAGER MODAL
-════════════════════════════════════════════════════════════ */
+// Modal gán nhãn cho note, hiển thị danh sách nhãn có sẵn và cho phép chọn nhiều nhãn để gán vào note hiện tại
 const LabelManagerModal = ({ allLabels, noteLabels, onClose, onSave, onManageGlobal }) => {
   const [selected, setSelected] = useState(new Set((noteLabels || []).map(l => l.id)));
+  // giao diện modal hiển thị danh sách nhãn có sẵn, gán nhãn đã chọn vào note hiện tại, lưu lại nhãn đã chọn và quản lý nhãn toàn cục
   return (
     <div className={CLS_OVERLAY} onClick={onClose}>
       <div className={`${CLS_BOX} max-w-sm`} onClick={e => e.stopPropagation()}>
@@ -402,9 +413,7 @@ const LabelManagerModal = ({ allLabels, noteLabels, onClose, onSave, onManageGlo
   );
 };
 
-/* ════════════════════════════════════════════════════════════
-   GLOBAL LABEL EDITOR
-════════════════════════════════════════════════════════════ */
+// Modal quản lý nhãn toàn cục (thêm/sửa/xóa nhãn)
 const LabelEditor = ({ labels, onClose, onSave }) => {
   const [list, setList]       = useState(labels.map(l => ({ ...l })));
   const [newName, setNewName] = useState('');
@@ -414,7 +423,7 @@ const LabelEditor = ({ labels, onClose, onSave }) => {
     const n = newName.trim(); if (!n) return;
     setList([...list, { id: Date.now(), name: n, color: newColor }]); setNewName('');
   };
-
+// giao diện quản lý nhãn toàn cục, cho phép thêm/sửa/xóa nhãn và lưu lại danh sách nhãn mới
   return (
     <div className={CLS_OVERLAY} onClick={onClose}>
       <div className={`${CLS_BOX} max-w-sm`} onClick={e => e.stopPropagation()}>
@@ -452,9 +461,8 @@ const LabelEditor = ({ labels, onClose, onSave }) => {
   );
 };
 
-/* ════════════════════════════════════════════════════════════
-   CONFIRM DIALOG
-════════════════════════════════════════════════════════════ */
+
+//xác nhận xóa note
 const ConfirmDialog = ({ message, onConfirm, onCancel }) => (
   <div className={CLS_OVERLAY} onClick={onCancel}>
     <div className={`${CLS_BOX} max-w-sm`} onClick={e => e.stopPropagation()}>
@@ -473,17 +481,15 @@ const ConfirmDialog = ({ message, onConfirm, onCancel }) => (
   </div>
 );
 
-/* ════════════════════════════════════════════════════════════
-   MAIN HOME COMPONENT
-════════════════════════════════════════════════════════════ */
+//Phần giao diện chính
 const Home = () => {
+  // các biến trạng thái
   const navigate = useNavigate();
   const [theme, setTheme] = useTheme();
 
   const currentUser = localStorage.getItem('currentUser') || sessionStorage.getItem('currentUser');
-  const displayName = localStorage.getItem('displayName') || sessionStorage.getItem('displayName') || (currentUser ? currentUser.split('@')[0] : 'Khách');
-  const avatar      = localStorage.getItem('avatar') || sessionStorage.getItem('avatar') || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix';
-  const isActive    = localStorage.getItem('isActive') || sessionStorage.getItem('isActive');
+  const displayName = localStorage.getItem('displayName') || (currentUser ? currentUser.split('@')[0] : 'Khách');
+  const avatar      = localStorage.getItem('avatar') || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix';
 
   const [notes, setNotes]             = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -518,7 +524,6 @@ const Home = () => {
 
   const editorRef     = useRef(null);
   const autoSaveTimer = useRef(null);
-  const pollingTimer  = useRef(null); // Tiêu chí 24: real-time polling
 
   const defaultNote = {
     id: null, title: '', content: '', color: prefs.defaultColor, isPinned: false,
@@ -529,78 +534,11 @@ const Home = () => {
   const [editorFont, setEditorFont]   = useState(prefs.fontFamily);
   const [editorColor, setEditorColor] = useState('#1f2937');
 
-  /* ── Effects ── */
-  useEffect(() => {
-    if (currentUser) {
-      // Load profile preferences
-      apiCall('/user/profile.php').then(res => {
-        if (res.success && res.user) {
-          if (res.user.preferences) {
-            const prefData = res.user.preferences;
-            if (prefData.settings) setSettings(prefData.settings);
-            if (prefData.prefs) setPrefs(prefData.prefs);
-          }
-          if (res.user.avatar) localStorage.setItem('avatar', res.user.avatar);
-          if (res.user.display_name) localStorage.setItem('displayName', res.user.display_name);
-        }
-      }).catch(e => console.error(e));
-
-      // Load Labels from dedicated API (Tiêu chí 15, 19)
-      apiCall('/labels/index.php')
-        .then(res => { if (res.success) setAllLabels(res.labels || []); })
-        .catch(e => console.error('Failed to load labels', e));
-
-      // Load Notes
-      apiCall('/notes/index.php')
-        .then(res => { if (res.success) setNotes(res.notes); })
-        .catch(err => console.error('Failed to load notes', err));
-    }
-  }, [currentUser]);
-
-  const prefSyncTimer = useRef(null);
-  useEffect(() => {
-    localStorage.setItem('appSettings', JSON.stringify(settings));
-    localStorage.setItem('userPrefs', JSON.stringify(prefs));
-
-    if (prefSyncTimer.current) clearTimeout(prefSyncTimer.current);
-    prefSyncTimer.current = setTimeout(() => {
-      apiCall('/user/profile.php', {
-        method: 'PUT',
-        body: JSON.stringify({ preferences: { settings, prefs } })
-      }).catch(e => console.error('Failed to sync prefs', e));
-    }, 1000);
-  }, [settings, prefs]);
-  // Tiêu chí 24: Polling real-time collaboration — refresh notes every 5s when editing a shared note
-  useEffect(() => {
-    if (!showModal || !formData.id) {
-      if (pollingTimer.current) clearInterval(pollingTimer.current);
-      return;
-    }
-    // Only poll if this note is shared with others
-    const isShared = (formData.shareList || []).length > 0;
-    if (!isShared) return;
-
-    pollingTimer.current = setInterval(() => {
-      apiCall(`/notes/index.php?id=${formData.id}`)
-        .then(res => {
-          if (res.success && res.notes && res.notes.length > 0) {
-            const fresh = res.notes[0];
-            // Only update if server version is newer
-            if (fresh.updated_at > (formData.updatedAt || '')) {
-              const incoming = { ...fresh, attachments: fresh.attachments || [], labels: fresh.labels || [] };
-              setFormData(prev => ({ ...prev, content: incoming.content, title: incoming.title, updatedAt: fresh.updated_at }));
-              setNotes(prev => prev.map(n => n.id === fresh.id ? incoming : n));
-              if (editorRef.current && document.activeElement !== editorRef.current) {
-                editorRef.current.innerHTML = incoming.content || '';
-              }
-            }
-          }
-        }).catch(() => {});
-    }, 5000);
-
-    return () => { if (pollingTimer.current) clearInterval(pollingTimer.current); };
-  }, [showModal, formData.id, formData.shareList]);
-
+//Hiệu ứng khởi tạo, lưu trữ và đồng bộ dữ liệu
+  useEffect(() => { if (currentUser) { const s = localStorage.getItem(`notes_${currentUser}`); if (s) setNotes(JSON.parse(s)); } }, [currentUser]);
+  useEffect(() => { localStorage.setItem('appSettings', JSON.stringify(settings)); }, [settings]);
+  useEffect(() => { localStorage.setItem('userPrefs', JSON.stringify(prefs)); }, [prefs]);
+  useEffect(() => { localStorage.setItem('allLabels', JSON.stringify(allLabels)); }, [allLabels]);
   useEffect(() => {
     if (showModal && editorRef.current) {
       const t = setTimeout(() => { if (editorRef.current) editorRef.current.innerHTML = formData.content || ''; }, 60);
@@ -608,53 +546,35 @@ const Home = () => {
     }
   }, [showModal, formData.id]);
 
-  /* ── Helpers ── */
+//Tìm kiếm với debounce 300ms
   const handleSearchInput = val => {
     setDisplayQuery(val);
     if (searchTimer.current) clearTimeout(searchTimer.current);
-    searchTimer.current = setTimeout(() => {
-      setSearchQuery(val);
-      // Tiêu chí 14: Debounced server-side search
-      const qs = val.trim() ? `?q=${encodeURIComponent(val.trim())}` : '';
-      apiCall(`/notes/index.php${qs}`)
-        .then(res => { if (res.success) setNotes(res.notes); })
-        .catch(e => console.error(e));
-    }, 400);
+    searchTimer.current = setTimeout(() => setSearchQuery(val), 300); // delay 300ms sau khi người dùng ngừng gõ
   };
 
-  const saveNotes = updated => { setNotes(updated); };
-
-  const syncUpdateNote = (note) => {
-    apiCall('/notes/index.php', { method: 'PUT', body: JSON.stringify(note) }).catch(e => console.error(e));
-  };
-  const syncCreateNote = async (note) => {
-    return await apiCall('/notes/index.php', { method: 'POST', body: JSON.stringify(note) });
-  };
-  const syncDeleteNote = (id) => {
-    apiCall(`/notes/index.php?id=${id}`, { method: 'DELETE' }).catch(e => console.error(e));
-  };
-
+  const saveNotes = updated => { setNotes(updated); localStorage.setItem(`notes_${currentUser}`, JSON.stringify(updated)); };
+//tự động lưu khi chỉnh sửa note trong modal, debounce 600ms, có thay đổi mới thì mới lưu, nếu title và content đều trống thì không lưu
   const triggerAutoSave = useCallback((data, content) => {
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     autoSaveTimer.current = setTimeout(() => {
       if (!data.title?.trim() && !content?.trim()) return;
       const now = new Date().toISOString();
       const noteToSave = { ...data, content, updatedAt: now };
-      if (data.id) {
-        setNotes(prev => prev.map(n => n.id === data.id ? noteToSave : n));
-        apiCall('/notes/index.php', { method: 'PUT', body: JSON.stringify(noteToSave) }).catch(e => console.error(e));
-      } else {
-        apiCall('/notes/index.php', { method: 'POST', body: JSON.stringify(noteToSave) })
-          .then(res => {
-            if (res.success && res.note) {
-              setNotes(prev => [res.note, ...prev]);
-              setFormData(fd => ({ ...fd, ...res.note }));
-            }
-          }).catch(e => console.error(e));
-      }
+      setNotes(prev => {
+        let updated;
+        if (data.id) { updated = prev.map(n => n.id === data.id ? noteToSave : n); }
+        else {
+          const newId = Date.now();
+          updated = [{ ...noteToSave, id: newId, createdAt: now }, ...prev];
+          setFormData(fd => ({ ...fd, id: newId, createdAt: now, updatedAt: now }));
+        }
+        localStorage.setItem(`notes_${currentUser}`, JSON.stringify(updated));
+        return updated;
+      });
     }, 600);
-  }, []);
-
+  }, [currentUser]);
+// các hàm xử lý logic chính
   const getHolidaysForDate = useCallback(dateStr => {
     const [y, m, d] = dateStr.split('-').map(Number);
     const holidays = [];
@@ -698,26 +618,15 @@ const Home = () => {
     return getSortedNotes(applySearch(result));
   }, [notes, activeFilter, searchQuery, applySearch, getSortedNotes]);
 
-  /* ── Actions ── */
   const handleCancel = () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current); setShowModal(false); setFormData(defaultNote); if (editorRef.current) editorRef.current.innerHTML = ''; };
 
-  const handleSaveNote = async () => {
+  const handleSaveNote = () => {
     if (!formData.title.trim()) return;
     const content = editorRef.current ? editorRef.current.innerHTML : formData.content;
     const now = new Date().toISOString();
     const noteToSave = { ...formData, content, updatedAt: now, createdAt: formData.createdAt || now };
-    
-    if (formData.id) {
-      setNotes(notes.map(n => n.id === formData.id ? noteToSave : n));
-      syncUpdateNote(noteToSave);
-    } else {
-      try {
-        const res = await syncCreateNote(noteToSave);
-        if (res.success) setNotes([res.note, ...notes]);
-      } catch (e) { console.error(e); }
-    }
-    
-    setShowModal(false); setFormData(defaultNote);
+    const updated = formData.id ? notes.map(n => n.id === formData.id ? noteToSave : n) : [{ ...noteToSave, id: Date.now(), createdAt: now }, ...notes];
+    saveNotes(updated); setShowModal(false); setFormData(defaultNote);
     if (editorRef.current) editorRef.current.innerHTML = '';
   };
 
@@ -738,20 +647,12 @@ const Home = () => {
   const handleDeleteNote  = id => setConfirmDelete({ id });
   const confirmDeleteNote = () => {
     if (!confirmDelete) return;
-    const id = confirmDelete.id;
-    saveNotes(notes.filter(n => n.id !== id));
-    if (selectedDayNotes) setSelectedDayNotes(prev => ({ ...prev, notes: prev.notes.filter(n => n.id !== id) }));
+    saveNotes(notes.filter(n => n.id !== confirmDelete.id));
+    if (selectedDayNotes) setSelectedDayNotes(prev => ({ ...prev, notes: prev.notes.filter(n => n.id !== confirmDelete.id) }));
     setConfirmDelete(null);
-    syncDeleteNote(id);
   };
 
-  const togglePin = id => {
-    const note = notes.find(n => n.id === id);
-    if (!note) return;
-    const updatedNote = { ...note, isPinned: !note.isPinned, pinnedAt: !note.isPinned ? new Date().toISOString() : null };
-    saveNotes(notes.map(n => n.id === id ? updatedNote : n));
-    syncUpdateNote(updatedNote);
-  };
+  const togglePin = id => saveNotes(notes.map(n => n.id === id ? { ...n, isPinned: !n.isPinned, pinnedAt: !n.isPinned ? new Date().toISOString() : null } : n));
 
   const handleNoteAccess = (note, action) => {
     if (!note.password || unlockedNotes.has(note.id)) { action(note); return; }
@@ -762,88 +663,26 @@ const Home = () => {
   const handlePasswordSubmit = pass => {
     if (!passwordModal) return;
     const note = notes.find(n => n.id === passwordModal.noteId);
-    if (passwordModal.mode === 'set') { 
-      const updatedNote = { ...note, password: pass || null };
-      saveNotes(notes.map(n => n.id === passwordModal.noteId ? updatedNote : n)); 
-      syncUpdateNote(updatedNote);
-      setPasswordModal(null); 
-      return; 
-    }
+    if (passwordModal.mode === 'set') { saveNotes(notes.map(n => n.id === passwordModal.noteId ? { ...n, password: pass || null } : n)); setPasswordModal(null); return; }
     if (note && note.password === pass) { setPasswordError(''); passwordModal.onSuccess(); }
     else setPasswordError('Mật khẩu không đúng!');
   };
 
-  const handleSaveShare  = (noteId, { shareList, visibility }) => {
-    const note = notes.find(n => n.id === noteId);
-    if (!note) return;
-    const updatedNote = { ...note, shareList, visibility, updatedAt: new Date().toISOString() };
-    saveNotes(notes.map(n => n.id === noteId ? updatedNote : n)); 
-    syncUpdateNote(updatedNote);
-    setShareModal(null); 
-  };
+  const handleSaveShare  = (noteId, { shareList, visibility }) => { saveNotes(notes.map(n => n.id === noteId ? { ...n, shareList, visibility, updatedAt: new Date().toISOString() } : n)); setShareModal(null); };
   const handleRevokeShare = (noteId, email) => {
-    const note = notes.find(n => n.id === noteId);
-    if (!note) return;
-    const updatedNote = { ...note, shareList: (note.shareList || []).filter(s => s.email !== email), updatedAt: new Date().toISOString() };
-    saveNotes(notes.map(n => n.id === noteId ? updatedNote : n));
-    syncUpdateNote(updatedNote);
+    saveNotes(notes.map(n => n.id === noteId ? { ...n, shareList: (n.shareList || []).filter(s => s.email !== email), updatedAt: new Date().toISOString() } : n));
     if (viewingNote?.id === noteId) setViewingNote(prev => ({ ...prev, shareList: (prev.shareList || []).filter(s => s.email !== email) }));
   };
   const handleSaveLabels = (noteId, selectedIds) => {
-    const note = notes.find(n => n.id === noteId);
-    if (!note) return;
     const selectedLabels = allLabels.filter(l => selectedIds.includes(l.id));
-    const updatedNote = { ...note, labels: selectedLabels, updatedAt: new Date().toISOString() };
-    saveNotes(notes.map(n => n.id === noteId ? updatedNote : n));
-    syncUpdateNote(updatedNote);
+    saveNotes(notes.map(n => n.id === noteId ? { ...n, labels: selectedLabels, updatedAt: new Date().toISOString() } : n));
     if (formData.id === noteId) setFormData(prev => ({ ...prev, labels: selectedLabels }));
     setLabelModal(null);
   };
-  const handleSaveGlobalLabels = async (newLabels) => {
-    const existingIds = new Set(allLabels.map(l => l.id));
-    const newIds = new Set(newLabels.map(l => l.id));
-    const deletedIds = new Set(allLabels.filter(l => !newIds.has(l.id)).map(l => l.id));
-
-    // Delete removed labels from API
-    for (const id of deletedIds) {
-      apiCall(`/labels/index.php?id=${id}`, { method: 'DELETE' }).catch(e => console.error(e));
-    }
-
-    // Create new labels / update existing
-    const resolvedLabels = [];
-    for (const lb of newLabels) {
-      if (!existingIds.has(lb.id)) {
-        // New label — create via API
-        try {
-          const res = await apiCall('/labels/index.php', { method: 'POST', body: JSON.stringify({ name: lb.name, color: lb.color }) });
-          if (res.success) resolvedLabels.push(res.label);
-          else resolvedLabels.push(lb);
-        } catch (e) { resolvedLabels.push(lb); }
-      } else {
-        // Check if renamed/recolored
-        const orig = allLabels.find(l => l.id === lb.id);
-        if (orig && (orig.name !== lb.name || orig.color !== lb.color)) {
-          apiCall('/labels/index.php', { method: 'PUT', body: JSON.stringify(lb) }).catch(e => console.error(e));
-        }
-        resolvedLabels.push(lb);
-      }
-    }
-
-    setAllLabels(resolvedLabels);
-
-    // Remove deleted labels from affected notes
-    if (deletedIds.size > 0) {
-      const updatedNotes = notes.map(n => {
-        const remainingLabels = (n.labels || []).filter(l => !deletedIds.has(l.id));
-        if (remainingLabels.length !== (n.labels || []).length) {
-          const updatedNote = { ...n, labels: remainingLabels };
-          syncUpdateNote(updatedNote);
-          return updatedNote;
-        }
-        return n;
-      });
-      saveNotes(updatedNotes);
-    }
+  const handleSaveGlobalLabels = newLabels => {
+    const deletedIds = new Set(allLabels.filter(l => !newLabels.find(nl => nl.id === l.id)).map(l => l.id));
+    setAllLabels(newLabels);
+    if (deletedIds.size > 0) saveNotes(notes.map(n => ({ ...n, labels: (n.labels || []).filter(l => !deletedIds.has(l.id)) })));
     setLabelEditor(false);
   };
 
@@ -866,8 +705,7 @@ const Home = () => {
     setIsFlipping(true);
     setTimeout(() => { setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + (dir === 'next' ? 1 : -1), 1)); setIsFlipping(false); }, 300);
   };
-
-  /* ── Calendar vars ── */
+//các biến ngày tháng năm, số ngày trong tháng, ngày bắt đầu của tháng...
   const year          = currentDate.getFullYear(), month = currentDate.getMonth();
   const daysInMonth   = new Date(year, month + 1, 0).getDate();
   const startDayIndex = (new Date(year, month, 1).getDay() + 6) % 7;
@@ -877,7 +715,7 @@ const Home = () => {
 
   if (!currentUser) return null;
 
-  /* ── Sub-components ── */
+  // component hiển thị các icon trạng thái
   const StatusIcons = ({ note }) => (
     <div className="flex items-center gap-1 flex-shrink-0 flex-wrap">
       {note.isPinned && <span title="Đã ghim" className="text-[13px]">📌</span>}
@@ -891,14 +729,14 @@ const Home = () => {
       )}
     </div>
   );
-
+// component card hiển thị tóm tắt các thông tin
   const NoteCard = ({ note }) => {
     const locked   = note.password && !unlockedNotes.has(note.id);
     const bg       = note.color || prefs.defaultColor;
     const fontFam  = note.fontFamily || prefs.fontFamily;
     const stripped = (note.content || '').replace(/<[^>]+>/g, '');
     const borderL  = note.isPinned ? '#6366f1' : note.isImportant ? '#ef4444' : 'rgba(0,0,0,0.1)';
-
+//viewMode list
     if (viewMode === 'list') return (
       <div className={`${CLS_CARD} flex items-start gap-3`}
         style={{ background: bg, borderLeft: `4px solid ${borderL}` }}
@@ -929,7 +767,7 @@ const Home = () => {
         </div>
       </div>
     );
-
+//viewMode grid
     return (
       <div className={`${CLS_CARD} flex flex-col relative`}
         style={{ background: bg, borderLeft: `4px solid ${borderL}` }}>
@@ -963,7 +801,6 @@ const Home = () => {
         </div>
         <div className="pt-2.5 border-t border-black/[.08] flex justify-between items-center mt-2">
           <div className="flex gap-1" onClick={e => e.stopPropagation()}>
-            <button onClick={() => handleViewNote(note)} className={CLS_IBTN_SM} title="Xem">👁️</button>
             <button onClick={() => togglePin(note.id)} className={CLS_IBTN_SM} title={note.isPinned ? 'Bỏ ghim' : 'Ghim'}>{note.isPinned ? '📌' : '📍'}</button>
             <button onClick={() => setLabelModal({ noteId: note.id })} className={CLS_IBTN_SM} title="Nhãn">🏷️</button>
             <button onClick={() => setShareModal(note)} className={CLS_IBTN_SM} title="Chia sẻ">🔗</button>
@@ -978,7 +815,7 @@ const Home = () => {
       </div>
     );
   };
-
+// component hiển thị danh sách note theo dạng grid hoặc list tùy theo viewMode
   const NoteGrid = ({ noteList }) => (
     <div className={viewMode === 'grid'
       ? 'grid gap-4 grid-cols-[repeat(auto-fill,minmax(280px,1fr))]'
@@ -996,9 +833,7 @@ const Home = () => {
 
   const sharedByMe = getSortedNotes(notes.filter(n => n.shareList?.length > 0 || n.visibility !== 'private'));
 
-  /* ══════════════════════════════════════════════════════════
-     RENDER
-  ══════════════════════════════════════════════════════════ */
+// phần = giao diện chính với sidebar và các view khác nhau
   return (
     <div className="flex min-h-screen items-start overflow-x-hidden bg-indigo-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100">
 
@@ -1020,23 +855,36 @@ const Home = () => {
         .cal-flip { animation: flipIn  0.3s cubic-bezier(0.23,1,0.32,1) forwards; }
       `}</style>
 
-      {/* ── HAMBURGER ── */}
+      {/*nút bật tắt sidebar */}
       <button
         onClick={() => setIsSidebarOpen(v => !v)}
-        className="fixed top-3 left-3 z-[100] w-10 h-10 bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 cursor-pointer flex flex-col items-center justify-center gap-1 transition-transform"
-        style={{ transform: isSidebarOpen ? 'translateX(256px)' : 'none' }}>
+        className="fixed top-3 left-3 z-[100] w-10 h-10 bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 cursor-pointer flex flex-col items-center justify-center gap-1 transition-transform duration-300"
+        style={{ transform: isSidebarOpen ? 'translateX(256px)' : 'translateX(0)' }}>
         {[
-          { transform: isSidebarOpen ? 'rotate(45deg) translateY(6px)' : 'none', width: 20 },
-          { transform: 'none', width: isSidebarOpen ? 0 : 16, opacity: isSidebarOpen ? 0 : 1 },
-          { transform: isSidebarOpen ? 'rotate(-45deg) translateY(-6px)' : 'none', width: 20 },
+          { 
+            transform: isSidebarOpen ? 'translateY(6px) rotate(45deg)' : 'translateY(0) rotate(0)', 
+            width: 20 
+          },
+          { 
+            transform: isSidebarOpen ? 'scaleX(0)' : 'scaleX(1)', // Dùng scaleX để thu nhỏ mượt hơn là đổi width
+            width: 16, 
+            opacity: isSidebarOpen ? 0 : 1 
+          },
+          { 
+            transform: isSidebarOpen ? 'translateY(-6px) rotate(-45deg)' : 'translateY(0) rotate(0)', 
+            width: 20 
+          },
         ].map((s, i) => (
-          <span key={i} className="block h-0.5 bg-slate-500 rounded transition-all duration-300" style={s} />
+          <span 
+            key={i} 
+            className="block h-0.5 bg-slate-500 rounded transition-all duration-300 origin-center" 
+            style={s} 
+          />
         ))}
       </button>
 
-      {/* ── SIDEBAR ── */}
-      <nav className={`w-64 bg-white dark:bg-slate-800 shadow-2xl flex flex-col fixed h-screen z-[90] border-r border-slate-200 dark:border-slate-700 transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        {/* Avatar */}
+      {/* Sidebar */}
+      <nav className={`w-full sm:w-64 bg-white dark:bg-slate-800 shadow-2xl flex flex-col fixed h-screen z-[90] border-r border-slate-200 dark:border-slate-700 transition-transform duration-300 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>        {/* Avatar */}
         <div className="p-4 text-center border-b border-slate-200 dark:border-slate-700">
           <div className="relative inline-block mb-2">
             <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 mx-auto">
@@ -1093,19 +941,11 @@ const Home = () => {
       {/* Sidebar overlay (mobile) */}
       {isSidebarOpen && <div onClick={() => setIsSidebarOpen(false)} className="fixed inset-0 z-[80] bg-black/20" />}
 
-      {/* ── MAIN CONTENT ── */}
+      {/*nội dung chính khi sidebar mở*/}
       <main className="flex-1 min-w-0 min-h-screen px-5 pb-8 pt-[68px] transition-[margin] duration-300"
         style={{ marginLeft: isSidebarOpen ? 256 : 0 }}>
 
-        {/* Unverified Banner */}
-        {isActive === '0' && (
-          <div className={`mb-4 bg-amber-100 border-l-4 border-amber-500 text-amber-800 p-4 rounded-r-xl shadow-sm ${isSidebarOpen ? '' : 'ml-11'}`} role="alert">
-            <p className="font-black m-0 text-[15px]">⚠️ Tài khoản chưa được xác thực!</p>
-            <p className="m-0 text-sm mt-1">Vui lòng kiểm tra hộp thư email của bạn để kích hoạt tài khoản.</p>
-          </div>
-        )}
-
-        {/* ════ CALENDAR ════ */}
+        {/* lịch cá nhân */}
         {activeView === 'calendar' && (
           <div className="fade-up">
             <div className={`flex justify-between items-center mb-4 flex-wrap gap-2.5 ${isSidebarOpen ? '' : 'pl-11'}`}>
@@ -1121,13 +961,13 @@ const Home = () => {
             </div>
 
             <div className={`bg-white dark:bg-slate-800 rounded-[18px] shadow-md p-3.5 border border-slate-200 dark:border-slate-700 ${isFlipping ? 'cal-flip' : ''}`}>
-              {/* Day headers */}
+              {/* header ngày */}
               <div className="grid grid-cols-7 gap-1 mb-1.5">
                 {['T2','T3','T4','T5','T6','T7','CN'].map((d, i) => (
                   <div key={d} className={`text-center font-black text-[11px] py-0.5 ${i === 6 ? 'text-red-500' : 'text-slate-400'}`}>{d}</div>
                 ))}
               </div>
-              {/* Day cells */}
+              {/* ô ngày */}
               <div className="grid grid-cols-7 gap-1">
                 {Array.from({ length: startDayIndex }).map((_, i) => <div key={`e${i}`} className="min-h-[78px]" />)}
                 {Array.from({ length: daysInMonth }).map((_, i) => {
@@ -1143,7 +983,7 @@ const Home = () => {
                       <div className="flex justify-between items-start">
                         <div className={`w-5.5 h-5.5 flex items-center justify-center rounded-lg text-xs font-black ${isToday ? 'bg-indigo-500 text-white' : isSun ? 'text-red-500' : 'text-slate-700 dark:text-slate-200'}`}
                           style={{ width: 22, height: 22 }}>{day}</div>
-                        <span className="text-[9px] text-slate-400 font-semibold">{getLunarDay(day, month + 1, year)}</span>
+                            <span className="hidden sm:inline text-[9px] text-slate-400 font-semibold">{getLunarDay(day, month + 1, year)}</span>
                       </div>
                       <div className="mt-1 flex flex-col gap-0.5">
                         {holidays.slice(0, 1).map((h, idx) => (
@@ -1166,7 +1006,7 @@ const Home = () => {
           </div>
         )}
 
-        {/* ════ ALL NOTES ════ */}
+        {/*tất cả ghi chú*/}
         {activeView === 'all-notes' && (
           <div className="fade-up">
             <div className={`flex items-center justify-between mb-3.5 flex-wrap gap-2.5 ${isSidebarOpen ? '' : 'pl-11'}`}>
@@ -1178,7 +1018,7 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Search */}
+            {/* thanh tìm kiếm */}
             <div className="relative mb-3.5">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-base pointer-events-none opacity-45">🔍</span>
               <input type="text" placeholder="Tìm kiếm theo tiêu đề, nội dung, nhãn..."
@@ -1195,7 +1035,7 @@ const Home = () => {
               </div>
             )}
 
-            {/* Filters */}
+            {/* bộ lọc */}
             <div className="flex flex-wrap gap-1.5 mb-4 overflow-x-auto pb-1">
               {FILTER_OPTIONS.map(f => (
                 <button key={f.value} onClick={() => setActiveFilter(f.value)}
@@ -1220,7 +1060,7 @@ const Home = () => {
           </div>
         )}
 
-        {/* ════ SHARED ════ */}
+        {/*mục đã chia sẻ*/}
         {activeView === 'shared' && (
           <div className="fade-up">
             <h1 className={`text-[26px] font-black mb-4 ${isSidebarOpen ? '' : 'pl-11'}`}>🔗 Đã chia sẻ</h1>
@@ -1254,7 +1094,7 @@ const Home = () => {
           </div>
         )}
 
-        {/* ════ SETTINGS ════ */}
+        {/* Cài đặt */}
         {activeView === 'settings' && (
           <div className="fade-up">
             <h1 className={`text-[26px] font-black mb-5 ${isSidebarOpen ? '' : 'pl-11'}`}>⚙️ Cài đặt</h1>
@@ -1308,7 +1148,7 @@ const Home = () => {
                 </div>
               </div>
 
-              {/* Holidays */}
+              {/* bật/tắt hiển thị ngày lễ */}
               <div className="bg-white dark:bg-slate-800 rounded-[18px] p-4 shadow-sm border border-slate-200 dark:border-slate-700">
                 <span className={CLS_LABEL}>📅 Hiển thị ngày lễ trên lịch</span>
                 {[
@@ -1333,7 +1173,7 @@ const Home = () => {
                 ))}
               </div>
 
-              {/* Labels */}
+              {/* Quản lý nhãn */}
               <div className="bg-white dark:bg-slate-800 rounded-[18px] p-4 shadow-sm border border-slate-200 dark:border-slate-700">
                 <div className="flex justify-between items-center mb-3">
                   <span className={`${CLS_LABEL} m-0`}>🏷️ Quản lý nhãn ({allLabels.length})</span>
@@ -1352,7 +1192,7 @@ const Home = () => {
                 }
               </div>
 
-              {/* Account */}
+              {/* Tài khoản */}
               <div className="bg-white dark:bg-slate-800 rounded-[18px] p-4 shadow-sm border border-slate-200 dark:border-slate-700">
                 <span className={CLS_LABEL}>👤 Tài khoản</span>
                 <div className="flex items-center gap-3.5 mb-3.5">
@@ -1413,7 +1253,7 @@ const Home = () => {
         )}
       </main>
 
-      {/* ════ DAY DETAIL MODAL ════ */}
+      {/* Chi tiết ngày khi bấm vào ô ngày */}
       {selectedDayNotes && (
         <div className={CLS_OVERLAY} onClick={() => setSelectedDayNotes(null)}>
           <div className={`${CLS_BOX} max-w-xl max-h-[88vh] flex flex-col`} onClick={e => e.stopPropagation()}>
@@ -1436,7 +1276,6 @@ const Home = () => {
                 ))}
               </div>
             )}
-
             <div className="overflow-y-auto flex-1">
               {selectedDayNotes.notes.length === 0 ? (
                 <div className="text-center py-10 px-5 text-slate-400">
@@ -1490,7 +1329,7 @@ const Home = () => {
         </div>
       )}
 
-      {/* ════ CREATE / EDIT NOTE MODAL ════ */}
+      {/* Modal tạo/sửa ghi chú */}
       {showModal && (
         <div className={CLS_OVERLAY} onClick={handleCancel}>
           <div className="bg-white dark:bg-slate-800 rounded-[22px] w-full max-w-2xl max-h-[96vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700"
@@ -1549,7 +1388,7 @@ const Home = () => {
               />
             </div>
 
-            {/* Attachment previews */}
+            {/* preview tệp đính kèm */}
             {formData.attachments?.length > 0 && (
               <div className="px-5 py-2 border-t border-slate-200 dark:border-slate-700 flex gap-2 flex-wrap flex-shrink-0">
                 {formData.attachments.map((att, i) => (
@@ -1567,7 +1406,7 @@ const Home = () => {
 
             {/* Bottom bar */}
             <div className="px-4 py-2.5 border-t border-slate-200 dark:border-slate-700 flex items-center gap-2 flex-wrap flex-shrink-0 bg-slate-50 dark:bg-slate-900/50">
-              {/* Color swatches */}
+              {/* đổi màu nền ghi chú */}
               <div className="flex gap-1.5 items-center">
                 {NOTE_BG_COLORS.slice(0, 6).map(c => (
                   <button key={c} onClick={() => setFormData(p => ({ ...p, color: c }))}
@@ -1605,13 +1444,13 @@ const Home = () => {
         </div>
       )}
 
-      {/* ════ OTHER MODALS ════ */}
+      {/* modal xem ghi chú */}
       {viewingNote && (
         <ViewNoteModal note={viewingNote} onClose={() => setViewingNote(null)}
           onEdit={() => { setViewingNote(null); handleEditNote(viewingNote); }}
           onRevokeShare={handleRevokeShare} />
       )}
-
+      {/* modal chia sẻ ghi chú */}
       {shareModal && (
         <ShareModal note={shareModal} onClose={() => setShareModal(null)}
           onSave={({ shareList, visibility }) => handleSaveShare(shareModal.id, { shareList, visibility })} />

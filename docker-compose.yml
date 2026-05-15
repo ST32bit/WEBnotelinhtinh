@@ -6,6 +6,25 @@ services:
     ports:
       - "3306:3306"
     environment:
+<<<<<<< HEAD
+      MYSQL_DATABASE: noteapp
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - dbdata:/var/lib/mysql
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=db
+    depends_on:
+      - db
+  backend:
+    build:
+      context: ./server-laravel
+=======
       MYSQL_DATABASE: laravel_react_db 
       MYSQL_ROOT_PASSWORD: root
     volumes:
@@ -14,11 +33,16 @@ services:
   backend:
     build:
       context: ./server-laravel/legacy-vanilla-php 
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
       dockerfile: Dockerfile
     ports:
       - "8000:80"
     volumes:
+<<<<<<< HEAD
+      - ./server-laravel:/var/www/html 
+=======
       - ./server-laravel/legacy-vanilla-php:/var/www/html 
+>>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
     depends_on:
       - db
 

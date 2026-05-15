@@ -1,7 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { apiCall } from '../api';
-
+//biến hằng
 const AVATAR_PRESETS = [
   { seed: 'Felix',    url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix' },
   { seed: 'Mia',      url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mia' },
@@ -34,7 +33,6 @@ const User = () => {
   const [email,         setEmail]         = useState(currentUser);
   const [avatar,        setAvatar]        = useState(currentAvatar);
   const [accentCls,     setAccentCls]     = useState(currentAccent);
-  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword,   setNewPassword]   = useState('');
   const [showPassword,  setShowPassword]  = useState(false);
   const [successMsg,    setSuccessMsg]    = useState('');
@@ -43,19 +41,6 @@ const User = () => {
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
 
   const fileInputRef = useRef(null);
-
-  useEffect(() => {
-    apiCall('/user/profile.php')
-      .then(res => {
-        if (res.success && res.user) {
-          setDisplayName(res.user.display_name || currentName);
-          setAvatar(res.user.avatar || currentAvatar);
-          setAccentCls(res.user.accent_color || currentAccent);
-          setEmail(res.user.email);
-        }
-      })
-      .catch(err => console.error('Failed to fetch profile', err));
-  }, []);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -70,50 +55,18 @@ const User = () => {
     reader.readAsDataURL(file);
   };
 
-  const handleSave = async (e) => {
+  const handleSave = (e) => {
     e.preventDefault();
-    if (activeTab === 'security') {
-      if (!currentPassword || !newPassword) {
-        setErrorMsg('⚠️ Vui lòng nhập đủ mật khẩu cũ và mới!');
-        setTimeout(() => setErrorMsg(''), 3000);
-        return;
-      }
-      try {
-        const res = await apiCall('/user/password.php', {
-          method: 'PUT',
-          body: JSON.stringify({ current_password: currentPassword, new_password: newPassword })
-        });
-        if (res.success) {
-          setSuccessMsg('✅ ' + res.message);
-          setCurrentPassword(''); setNewPassword('');
-        }
-      } catch (err) {
-        setErrorMsg('⚠️ ' + err.message);
-      }
-      setTimeout(() => { setErrorMsg(''); setSuccessMsg(''); }, 3000);
-      return;
-    }
-
     if (!displayName.trim()) {
       setErrorMsg('⚠️ Tên hiển thị không được để trống!');
       setTimeout(() => setErrorMsg(''), 3000);
       return;
     }
-    try {
-      const res = await apiCall('/user/profile.php', {
-        method: 'PUT',
-        body: JSON.stringify({ display_name: displayName.trim(), avatar, accent_color: accentCls })
-      });
-      if (res.success) {
-        localStorage.setItem('displayName', displayName.trim());
-        localStorage.setItem('avatar', avatar);
-        localStorage.setItem('accentColor', accentCls);
-        setSuccessMsg('✅ Lưu thay đổi thành công!');
-      }
-    } catch (err) {
-      setErrorMsg('⚠️ ' + err.message);
-    }
-    setTimeout(() => { setErrorMsg(''); setSuccessMsg(''); }, 3000);
+    localStorage.setItem('displayName', displayName.trim());
+    localStorage.setItem('avatar', avatar);
+    localStorage.setItem('accentColor', accentCls);
+    setSuccessMsg('✅ Lưu thay đổi thành công!');
+    setTimeout(() => setSuccessMsg(''), 3000);
   };
 
   const handleDeleteAccount = () => {
@@ -169,61 +122,56 @@ const User = () => {
       `}</style>
 
       <div className="max-w-2xl mx-auto">
-
-        {/* Back button */}
         <button onClick={() => navigate('/home')}
           className="mb-6 flex items-center gap-2 font-black text-gray-500 hover:text-indigo-600 transition-all group">
           <span className="w-9 h-9 rounded-xl bg-white shadow-sm border border-gray-200 flex items-center justify-center group-hover:bg-indigo-50 group-hover:border-indigo-200 transition-all">←</span>
           Về trang chủ
         </button>
 
-        <div className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white overflow-hidden fade-up">
+        <div className="relative bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white overflow-hidden fade-up">
 
-          {/* ── HERO HEADER ── */}
-          <div className={`bg-gradient-to-r ${accentCls} p-10 relative overflow-hidden`}>
-            {/* Decorative blobs */}
+          <div className={`bg-gradient-to-r ${accentCls} p-10 relative overflow-visible`}>
             <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/10"></div>
             <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/10"></div>
 
             <div className="relative flex flex-col items-center">
-              {/* Avatar */}
-              <div className="relative group mb-4">
-                <div className="w-28 h-28 rounded-3xl border-4 border-white shadow-xl overflow-hidden bg-white">
-                  <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
-                </div>
-                <button type="button"
-                  onClick={() => setShowAvatarPicker(!showAvatarPicker)}
-                  className="absolute -bottom-2 -right-2 w-9 h-9 bg-white rounded-xl shadow-lg flex items-center justify-center text-lg border-2 border-white hover:scale-110 transition-transform">
-                  📷
-                </button>
-              </div>
-
-              {/* Avatar picker popup */}
-              {showAvatarPicker && (
-                <div className="absolute top-36 z-50 bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-4 border border-white bounce-in w-72">
-                  <p className="text-xs font-black text-gray-400 uppercase tracking-wider mb-3">Chọn Avatar</p>
-                  <div className="grid grid-cols-4 gap-2 mb-3">
-                    {AVATAR_PRESETS.map(p => (
-                      <img key={p.seed} src={p.url} alt={p.seed}
-                        onClick={() => { setAvatar(p.url); setShowAvatarPicker(false); }}
-                        className={`avatar-preset ${avatar === p.url ? 'selected' : ''}`} />
-                    ))}
+              <div className="relative mb-4">
+                <div className="relative group">
+                  <div className="w-28 h-28 rounded-3xl border-4 border-white shadow-xl overflow-hidden bg-white">
+                    <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
                   </div>
                   <button type="button"
-                    onClick={() => { setShowAvatarPicker(false); fileInputRef.current.click(); }}
-                    className="w-full py-2.5 rounded-2xl bg-indigo-50 text-indigo-700 font-black text-sm hover:bg-indigo-100 transition border border-indigo-100">
-                    📁 Tải ảnh từ máy tính
+                    onClick={() => setShowAvatarPicker(!showAvatarPicker)}
+                    className="absolute -bottom-2 -right-2 w-9 h-9 bg-white rounded-xl shadow-lg flex items-center justify-center text-lg border-2 border-white hover:scale-110 transition-transform">
+                    📷
                   </button>
-                  <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
                 </div>
-              )}
+
+                {showAvatarPicker && (
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-4 border border-white bounce-in w-72">
+                    <p className="text-xs font-black text-gray-400 uppercase tracking-wider mb-3">Chọn Avatar</p>
+                    <div className="grid grid-cols-4 gap-2 mb-3">
+                      {AVATAR_PRESETS.map(p => (
+                        <img key={p.seed} src={p.url} alt={p.seed}
+                          onClick={() => { setAvatar(p.url); setShowAvatarPicker(false); }}
+                          className={`avatar-preset ${avatar === p.url ? 'selected' : ''}`} />
+                      ))}
+                    </div>
+                    <button type="button"
+                      onClick={() => { setShowAvatarPicker(false); fileInputRef.current.click(); }}
+                      className="w-full py-2.5 rounded-2xl bg-indigo-50 text-indigo-700 font-black text-sm hover:bg-indigo-100 transition border border-indigo-100">
+                      📁 Tải ảnh từ máy tính
+                    </button>
+                    <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
+                  </div>
+                )}
+              </div>
 
               <h1 className="text-3xl font-black text-white drop-shadow-sm">{displayName}</h1>
               <p className="text-white/80 font-bold mt-1 text-sm">🎓 {email}</p>
             </div>
           </div>
 
-          {/* ── TABS ── */}
           <div className="flex gap-2 p-4 bg-gray-50/80 border-b border-gray-100">
             {tabs.map(t => (
               <button key={t.id} onClick={() => setActiveTab(t.id)}
@@ -234,10 +182,8 @@ const User = () => {
             ))}
           </div>
 
-          {/* ── TAB CONTENT ── */}
           <form onSubmit={handleSave} className="p-6 sm:p-8">
 
-            {/* Alerts */}
             {successMsg && (
               <div className="mb-5 bg-emerald-50 text-emerald-700 p-4 rounded-2xl font-bold border border-emerald-200 text-center bounce-in">
                 {successMsg}
@@ -249,7 +195,6 @@ const User = () => {
               </div>
             )}
 
-            {/* ── PROFILE TAB ── */}
             {activeTab === 'profile' && (
               <div className="space-y-5 fade-up">
                 <div>
@@ -267,7 +212,6 @@ const User = () => {
               </div>
             )}
 
-            {/* ── SECURITY TAB ── */}
             {activeTab === 'security' && (
               <div className="space-y-5 fade-up">
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3">
@@ -281,7 +225,6 @@ const User = () => {
                 <div>
                   <label className="field-label">Mật khẩu hiện tại</label>
                   <input type="password" placeholder="Nhập mật khẩu hiện tại..."
-                    value={currentPassword} onChange={e => setCurrentPassword(e.target.value)}
                     className="field-input" />
                 </div>
 
@@ -298,7 +241,6 @@ const User = () => {
                     </button>
                   </div>
 
-                  {/* Strength bar */}
                   {newPassword && (
                     <div className="mt-3">
                       <div className="flex gap-1 mb-1">
@@ -338,11 +280,8 @@ const User = () => {
               </div>
             )}
 
-            {/* ── APPEARANCE TAB ── */}
             {activeTab === 'appearance' && (
               <div className="space-y-6 fade-up">
-
-                {/* Accent color */}
                 <div>
                   <label className="field-label">Màu chủ đạo (Header gradient)</label>
                   <div className="flex gap-3 flex-wrap mt-2">
@@ -356,7 +295,6 @@ const User = () => {
                   </div>
                 </div>
 
-                {/* Avatar presets */}
                 <div>
                   <label className="field-label">Avatar mẫu</label>
                   <div className="flex gap-3 flex-wrap mt-2">
@@ -368,7 +306,6 @@ const User = () => {
                   </div>
                 </div>
 
-                {/* Upload custom */}
                 <div>
                   <label className="field-label">Hoặc tải ảnh từ máy tính</label>
                   <button type="button" onClick={() => fileInputRef.current.click()}
@@ -378,7 +315,6 @@ const User = () => {
                   <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
                 </div>
 
-                {/* Preview */}
                 <div className={`rounded-3xl p-6 bg-gradient-to-r ${accentCls} flex items-center gap-4`}>
                   <div className="w-16 h-16 rounded-2xl border-3 border-white shadow-lg overflow-hidden bg-white flex-shrink-0">
                     <img src={avatar} alt="preview" className="w-full h-full object-cover" />
@@ -391,7 +327,6 @@ const User = () => {
               </div>
             )}
 
-            {/* ── ACTION BUTTONS ── */}
             <div className="flex flex-col sm:flex-row gap-3 mt-8 pt-6 border-t border-gray-100">
               <button type="button" onClick={handleLogout}
                 className="flex-1 py-4 rounded-2xl bg-gray-100 text-gray-600 font-black hover:bg-gray-200 transition-all">
