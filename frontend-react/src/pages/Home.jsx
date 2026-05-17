@@ -662,36 +662,34 @@ const Home = () => {
   const [editorFont, setEditorFont]   = useState(prefs.fontFamily);
   const [editorColor, setEditorColor] = useState('#1f2937');
 
-//Hiệu ứng khởi tạo, lưu trữ và đồng bộ dữ liệu
+//Hiệu ứng khởi tạo - LUÔN fetch từ server, KHÔNG dùng cache cũ
   useEffect(() => {
     if (!currentUser) return;
     
-    // Load from cache first (instant load)
-    const cached = localStorage.getItem(`notes_${currentUser}`);
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached);
-        if (parsed.length > 0) setNotes(parsed);
-      } catch (e) {}
-    }
+    // XÓA cache cũ trước khi load mới
+    localStorage.setItem(`notes_${currentUser}`, JSON.stringify([]));
+    setNotes([]);
     
-    // Then sync with server
+    // Luôn fetch từ server
     const fetchNotes = async () => {
       if (!navigator.onLine) {
-        if (window.toast) window.toast('⚠️ Offline - dùng dữ liệu cục bộ', 'info');
+        if (window.toast) window.toast('⚠️ Offline - không thể tải dữ liệu', 'error');
         return;
       }
       try {
         const data = await apiCall('/notes?limit=100');
         if (data.notes && data.notes.length > 0) {
-          setNotes(data.notes);
-          localStorage.setItem(`notes_${currentUser}`, JSON.stringify(data.notes));
+          // Chỉ lấy notes CÓ server_id (đã được lưu thật)
+          const validNotes = data.notes.filter(n => n.id);
+          setNotes(validNotes);
+          localStorage.setItem(`notes_${currentUser}`, JSON.stringify(validNotes));
         } else {
+          setNotes([]);
           localStorage.setItem(`notes_${currentUser}`, JSON.stringify([]));
         }
       } catch (err) {
         console.error('Lỗi lấy notes:', err);
-        if (window.toast) window.toast('⚠️ Dùng dữ liệu offline', 'info');
+        setNotes([]);
       }
     };
     fetchNotes();
@@ -878,17 +876,15 @@ const Home = () => {
       
       const noteToSave = { ...formData, ...savedNote, content, updatedAt: now, createdAt: savedNote.created_at, id: savedNote.id, server_id: savedNote.id };
       
-      // Khi tạo note mới hoặc cập nhật note - LUÔN lấy từ server làm chuẩn
-      // Xóa tất cả note local không có server_id để tránh trùng lặp
-      let updated;
-      if (formData.server_id) {
-        // Cập nhật note đã có server
-        updated = notes.map(n => n.server_id === formData.server_id ? noteToSave : n);
-      } else {
-        // Tạo note mới - lọc bỏ TẤT CẢ note không có server_id (để tránh tạo 2 note)
-        updated = [noteToSave, ...notes.filter(n => n.server_id)];
-      }
-      saveNotes(updated);
+      // Sau khi lưu, fetch lại từ server để đảm bảo dữ liệu đúng của user
+      try {
+        const data = await apiCall('/notes?limit=100');
+        if (data.notes) {
+          const validNotes = data.notes.filter(n => n.id);
+          setNotes(validNotes);
+          localStorage.setItem(`notes_${currentUser}`, JSON.stringify(validNotes));
+        }
+      } catch (e) { console.error('Lỗi refresh notes:', e); }
     } catch (err) {
       console.error('Lỗi lưu note:', err);
       alert('Lỗi lưu note: ' + err.message);
@@ -921,8 +917,9 @@ const Home = () => {
   const handleDeleteNote  = id => setConfirmDelete({ id });
   const confirmDeleteNote = async () => {
     if (!confirmDelete) return;
-    const noteToDelete = notes.find(n => n.id === confirmDelete.id);
+    const noteToDelete = notes.find(n => n.id === confirmDelete.id || n.server_id === confirmDelete.id);
     
+    // Xóa từ server nếu có server_id
     if (noteToDelete?.server_id) {
       try {
         await apiCall(`/notes/${noteToDelete.server_id}`, { method: 'DELETE' });
@@ -931,8 +928,10 @@ const Home = () => {
       }
     }
     
-    saveNotes(notes.filter(n => n.id !== confirmDelete.id));
-    if (selectedDayNotes) setSelectedDayNotes(prev => ({ ...prev, notes: prev.notes.filter(n => n.id !== confirmDelete.id) }));
+    // Xóa theo cả id và server_id
+    const updated = notes.filter(n => n.id !== confirmDelete.id && n.server_id !== confirmDelete.id);
+    saveNotes(updated);
+    if (selectedDayNotes) setSelectedDayNotes(prev => ({ ...prev, notes: prev.notes.filter(n => n.id !== confirmDelete.id && n.server_id !== confirmDelete.id) }));
     setConfirmDelete(null);
   };
 
@@ -1118,7 +1117,7 @@ const Home = () => {
           const newAttachments = data.attachments.map(a => ({
             name: a.file_name,
             type: a.file_type,
-            data: `/storage/${a.file_path}`,
+            data: `http://localhost:8000/storage/${a.file_path}`,
             server_id: a.id
           }));
           setFormData(prev => ({ ...prev, attachments: [...(prev.attachments || []), ...newAttachments] }));
