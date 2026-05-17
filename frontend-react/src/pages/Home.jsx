@@ -311,7 +311,7 @@ const ShareModal = ({ note, onClose, onSave, error }) => {
 
         <div className="mb-4">
           <span className={CLS_LABEL}>Chế độ hiển thị</span>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {visOptions.map(o => (
               <button key={o.v} type="button" onClick={() => setVisibility(o.v)}
                 className={`p-2.5 rounded-xl border-2 text-center cursor-pointer transition-all font-[inherit] ${visibility === o.v ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30' : 'border-slate-200 dark:border-slate-600 bg-transparent'}`}>
@@ -468,9 +468,9 @@ const ViewNoteModal = ({ note, onClose, onEdit, onRevokeShare }) => (
         {(note.shareList?.length > 0 || note.visibility !== 'private') && (
           <div className="mt-4 pt-3.5 border-t border-black/10">
             <span className={CLS_LABEL}>🔗 Chi tiết chia sẻ</span>
-            {note.visibility !== 'private' && (
+            {note.visibility === 'public' && (
               <div className="flex items-center gap-2 px-3 py-2 bg-white/60 rounded-xl mb-2 text-sm font-bold text-slate-700">
-                {note.visibility === 'public' ? '🌍 Công khai với mọi người' : '🔗 Truy cập qua link'}
+                🌍 Công khai với mọi người
               </div>
             )}
             {(note.shareList || []).map(s => (
