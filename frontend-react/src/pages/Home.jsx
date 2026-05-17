@@ -762,18 +762,17 @@ const Home = () => {
   };
 
   const saveNotes = updated => { setNotes(updated); localStorage.setItem(`notes_${currentUser}`, JSON.stringify(updated)); };
-//tự động lưu khi chỉnh sửa note trong modal, debounce 600ms, chỉ lưu local không tạo note mới
+//tự động lưu khi chỉnh sửa note - CHỈ khi đã có server_id (đã được lưu trên server)
   const triggerAutoSave = useCallback((data, content) => {
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     autoSaveTimer.current = setTimeout(() => {
       if (!data.title?.trim() && !content?.trim()) return;
-      // Chỉ auto-save khi note đã có server_id hoặc đã có local id
-      if (!data.id && !data.server_id) return;
+      // Chỉ auto-save KHI ĐÃ CÓ server_id - note đã được lưu trên server rồi
+      if (!data.server_id) return;
       const now = new Date().toISOString();
       const noteToSave = { ...data, content, updatedAt: now };
       setNotes(prev => {
-        const targetId = data.server_id || data.id;
-        const updated = prev.map(n => (n.id === targetId || n.server_id === targetId) ? noteToSave : n);
+        const updated = prev.map(n => (n.server_id === data.server_id) ? noteToSave : n);
         localStorage.setItem(`notes_${currentUser}`, JSON.stringify(updated));
         return updated;
       });
@@ -885,14 +884,15 @@ const Home = () => {
       
       const noteToSave = { ...formData, ...savedNote, content, updatedAt: now, createdAt: savedNote.created_at, id: savedNote.id, server_id: savedNote.id };
       
-      // Nếu tạo note mới, xóa note local trùng (để tránh tạo 2 note)
+      // Khi tạo note mới hoặc cập nhật note - LUÔN lấy từ server làm chuẩn
+      // Xóa tất cả note local không có server_id để tránh trùng lặp
       let updated;
       if (formData.server_id) {
-        updated = notes.map(n => n.id === formData.server_id || n.server_id === formData.server_id ? noteToSave : n);
+        // Cập nhật note đã có server
+        updated = notes.map(n => n.server_id === formData.server_id ? noteToSave : n);
       } else {
-        // Xóa note local cùng title (nếu có) để tránh trùng lặp
-        const titleToRemove = formData.title;
-        updated = [noteToSave, ...notes.filter(n => n.title !== titleToRemove || n.server_id)];
+        // Tạo note mới - lọc bỏ TẤT CẢ note không có server_id (để tránh tạo 2 note)
+        updated = [noteToSave, ...notes.filter(n => n.server_id)];
       }
       saveNotes(updated);
     } catch (err) {
