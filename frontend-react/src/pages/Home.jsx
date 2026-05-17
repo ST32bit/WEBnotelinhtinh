@@ -1,5 +1,22 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { apiCall } from '../api';
+
+//Toast notification helper
+const showToast = (message, type = 'info') => {
+  const existing = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = `fixed top-4 right-4 z-[9999] px-4 py-3 rounded-xl shadow-lg font-bold text-sm animate-fade-up ${type === 'success' ? 'bg-green-500 text-white' : type === 'error' ? 'bg-red-500 text-white' : 'bg-indigo-500 text-white'}`;
+  toast.textContent = message;
+  if (!existing) {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    document.body.appendChild(container);
+  }
+  document.getElementById('toast-container').appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
+};
+window.toast = showToast;
 
 //Các hàm tính âm lịch
 function INT(d) { return Math.floor(d); }
@@ -126,7 +143,7 @@ function useTheme() {
 // Overlay backdrop
 const CLS_OVERLAY = 'fixed inset-0 z-[200] flex items-center justify-center bg-black/45 backdrop-blur-sm p-4';
 // Modal box
-const CLS_BOX = 'bg-white dark:bg-slate-800 rounded-[22px] p-6 w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700';
+const CLS_BOX = 'bg-white dark:bg-slate-800 rounded-[22px] p-4 sm:p-6 w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 mx-2 sm:mx-0';
 // Primary button
 const CLS_BTN_PRI = 'bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl px-4 py-2.5 font-black text-sm cursor-pointer transition-all hover:-translate-y-px active:translate-y-0 border-0';
 // Secondary button
@@ -146,47 +163,136 @@ const CLS_CARD = 'rounded-2xl p-3.5 shadow-sm transition-all duration-200 hover:
 //password mođal, dùng chung cho đặt mật khẩu mới và nhập mật khẩu cũ để mở note
 const PasswordModal = ({ mode, onSubmit, onCancel, error }) => {
   const [pass, setPass] = useState('');
+  const [confirmPass, setConfirmPass] = useState('');
+  const [currentPass, setCurrentPass] = useState('');
+
+  const getTitle = () => {
+    if (mode === 'verify') return 'Nhập mật khẩu';
+    if (mode === 'change') return 'Đổi mật khẩu';
+    if (mode === 'remove') return 'Xác nhận mật khẩu';
+    return 'Đặt mật khẩu';
+  };
+
+  const handleSubmit = () => {
+    if (mode === 'set') {
+      if (pass !== confirmPass) { onCancel('Mật khẩu không khớp!'); return; }
+      if (!pass) { onCancel('Mật khẩu không được để trống!'); return; }
+      onSubmit(pass);
+    } else if (mode === 'change') {
+      if (pass !== confirmPass) { onCancel('Mật khẩu mới không khớp!'); return; }
+      if (!pass) { onCancel('Mật khẩu không được để trống!'); return; }
+      onSubmit({ currentPass, newPass: pass });
+    } else if (mode === 'remove') {
+      onSubmit(currentPass);
+    } else {
+      onSubmit(pass);
+    }
+  };
+
   return (
     <div className={CLS_OVERLAY} onClick={onCancel}>
       <div className={`${CLS_BOX} max-w-sm`} onClick={e => e.stopPropagation()}>
         <div className="text-center mb-5">
           <div className="text-5xl mb-2">🔒</div>
-          <h3 className="text-lg font-black m-0">{mode === 'set' ? 'Đặt mật khẩu' : 'Nhập mật khẩu'}</h3>
-          <p className="text-xs text-slate-400 mt-1">{mode === 'set' ? 'Bảo vệ note của bạn' : 'Note này được bảo vệ'}</p>
+          <h3 className="text-lg font-black m-0">{getTitle()}</h3>
+          <p className="text-xs text-slate-400 mt-1">
+            {mode === 'set' ? 'Bảo vệ note của bạn' :
+             mode === 'verify' ? 'Note này được bảo vệ' :
+             mode === 'change' ? 'Nhập mật khẩu cũ và mật khẩu mới 2 lần' :
+             'Nhập mật khẩu hiện tại để xác nhận'}
+          </p>
         </div>
         {error && (
           <div className="bg-red-50 text-red-600 rounded-xl px-4 py-2.5 font-extrabold text-xs text-center mb-3">
             {error}
           </div>
         )}
-        <input
-          type="password"
-          placeholder="Mật khẩu..."
-          value={pass}
-          onChange={e => setPass(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && onSubmit(pass)}
-          autoFocus
-          className={`${CLS_INPUT} text-center font-black text-xl tracking-[4px] mb-3`}
-        />
+        {(mode === 'change' || mode === 'remove') && (
+          <input
+            type="password"
+            placeholder="Mật khẩu hiện tại..."
+            value={currentPass}
+            onChange={e => setCurrentPass(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+            autoFocus
+            className={`${CLS_INPUT} text-center font-black text-xl tracking-[4px] mb-3`}
+          />
+        )}
+        {(mode === 'set' || mode === 'change') && (
+          <>
+            <input
+              type="password"
+              placeholder={mode === 'change' ? 'Mật khẩu mới...' : 'Mật khẩu mới...'}
+              value={pass}
+              onChange={e => setPass(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+              className={`${CLS_INPUT} text-center font-black text-xl tracking-[4px] mb-3`}
+            />
+            <input
+              type="password"
+              placeholder="Nhập lại mật khẩu..."
+              value={confirmPass}
+              onChange={e => setConfirmPass(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+              autoFocus={mode === 'set' || mode === 'change'}
+              className={`${CLS_INPUT} text-center font-black text-xl tracking-[4px] mb-3`}
+            />
+          </>
+        )}
+        {mode === 'verify' && (
+          <input
+            type="password"
+            placeholder="Mật khẩu..."
+            value={pass}
+            onChange={e => setPass(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && onSubmit(pass)}
+            autoFocus
+            className={`${CLS_INPUT} text-center font-black text-xl tracking-[4px] mb-3`}
+          />
+        )}
         <div className="flex gap-2.5">
           <button onClick={onCancel} className={`${CLS_BTN_SEC} flex-1`}>Hủy</button>
-          <button onClick={() => onSubmit(pass)} className={`${CLS_BTN_PRI} flex-1`}>Xác nhận</button>
+          <button onClick={handleSubmit} className={`${CLS_BTN_PRI} flex-1`}>Xác nhận</button>
         </div>
       </div>
     </div>
   );
 };
+//lock menu modal - hiển thị khi note đã mở khóa, cho phép đổi mật khẩu hoặc tắt khóa
+const LockMenuModal = ({ note, onClose, onChangePassword, onRemovePassword }) => {
+  return (
+    <div className={CLS_OVERLAY} onClick={onClose}>
+      <div className={`${CLS_BOX} max-w-sm`} onClick={e => e.stopPropagation()}>
+        <div className="text-center mb-5">
+          <div className="text-5xl mb-2">🔓</div>
+          <h3 className="text-lg font-black m-0">Quản lý khóa</h3>
+          <p className="text-xs text-slate-400 mt-1">Note đang được mở khóa</p>
+        </div>
+        <div className="flex flex-col gap-2.5">
+          <button onClick={onChangePassword} className={`${CLS_BTN_SEC} w-full py-3`}>
+            🔐 Đổi mật khẩu
+          </button>
+          <button onClick={onRemovePassword} className="w-full py-3 rounded-xl bg-red-50 border border-red-200 text-red-600 font-extrabold text-sm cursor-pointer hover:bg-red-100 transition-colors">
+            🔓 Tắt khóa (nhập lại mật khẩu để xác nhận)
+          </button>
+        </div>
+        <button onClick={onClose} className={`${CLS_BTN_SEC} w-full mt-3`}>Đóng</button>
+      </div>
+    </div>
+  );
+};
 //share modal, chia sẻ note với người khác qua email, thiết lập quyền xem/sửa và chế độ hiển thị của note khi chia sẻ
-const ShareModal = ({ note, onClose, onSave }) => {
+const ShareModal = ({ note, onClose, onSave, error }) => {
   const [shareList, setShareList] = useState(note.shareList || []);
   const [email, setEmail]         = useState('');
   const [role, setRole]           = useState('viewer');
   const [visibility, setVisibility] = useState(note.visibility || 'private');
+  const [validating, setValidating] = useState(false);
 
-  const addShare = () => {
+  const addShare = async () => {
     const e2 = email.trim().toLowerCase();
     if (!e2 || !/\S+@\S+\.\S+/.test(e2) || shareList.find(s => s.email === e2)) return;
-    setShareList([...shareList, { email: e2, role }]); setEmail('');
+    setShareList([...shareList, { email: e2, role, status: 'pending' }]); setEmail('');
   };
 //vis: chế độ hiển thị
   const visOptions = [
@@ -215,6 +321,22 @@ const ShareModal = ({ note, onClose, onSave }) => {
             ))}
           </div>
         </div>
+
+        {(shareList.length > 0 || note.shareList?.length > 0) && (
+          <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-200 dark:border-indigo-800">
+            <div className="text-xs font-extrabold text-indigo-700 dark:text-indigo-300">
+              📊 Đã chia sẻ với {shareList.length} người
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
+            <div className="text-xs font-extrabold text-red-600 dark:text-red-400">
+              ⚠️ {error}
+            </div>
+          </div>
+        )}
 
         <div className="mb-4">
           <span className={CLS_LABEL}>Thêm người</span>
@@ -281,7 +403,7 @@ const ShareModal = ({ note, onClose, onSave }) => {
 const ViewNoteModal = ({ note, onClose, onEdit, onRevokeShare }) => (
   <div className={CLS_OVERLAY} onClick={onClose}>
     <div
-      className="rounded-[22px] p-6 w-full max-w-2xl shadow-2xl max-h-[90vh] flex flex-col border border-black/10"
+      className="rounded-[22px] p-4 sm:p-6 w-full max-w-2xl shadow-2xl max-h-[90vh] flex flex-col border border-black/10 mx-2 sm:mx-0"
       style={{ backgroundColor: note.color || '#fef9c3' }}
       onClick={e => e.stopPropagation()}
     >
@@ -513,9 +635,14 @@ const Home = () => {
   const [shareModal, setShareModal]       = useState(null);
   const [passwordModal, setPasswordModal] = useState(null);
   const [passwordError, setPasswordError] = useState('');
-  const [unlockedNotes, setUnlockedNotes] = useState(new Set());
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [sharedSubTab, setSharedSubTab]   = useState('by-me');
+  const [unlockedNotes, setUnlockedNotes] = useState(() => new Set());
+  const [lockMenu, setLockMenu] = useState(null);
+  const [sharedWithMe, setSharedWithMe] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [shareError, setShareError] = useState('');
+  const [lastPollTime, setLastPollTime] = useState(() => new Date().toISOString());
 
   const [prefs, setPrefs] = useState(() =>
     JSON.parse(localStorage.getItem('userPrefs') || JSON.stringify({ fontSize: 14, fontFamily: 'Nunito', defaultColor: '#fef08a' })));
@@ -535,10 +662,91 @@ const Home = () => {
   const [editorColor, setEditorColor] = useState('#1f2937');
 
 //Hiệu ứng khởi tạo, lưu trữ và đồng bộ dữ liệu
-  useEffect(() => { if (currentUser) { const s = localStorage.getItem(`notes_${currentUser}`); if (s) setNotes(JSON.parse(s)); } }, [currentUser]);
+  useEffect(() => {
+    if (!currentUser) return;
+    
+    // Load from cache first (instant load)
+    const cached = localStorage.getItem(`notes_${currentUser}`);
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        if (parsed.length > 0) setNotes(parsed);
+      } catch (e) {}
+    }
+    
+    // Then sync with server
+    const fetchNotes = async () => {
+      if (!navigator.onLine) {
+        if (window.toast) window.toast('⚠️ Offline - dùng dữ liệu cục bộ', 'info');
+        return;
+      }
+      try {
+        const data = await apiCall('/notes?limit=100');
+        if (data.notes && data.notes.length > 0) {
+          setNotes(data.notes);
+          localStorage.setItem(`notes_${currentUser}`, JSON.stringify(data.notes));
+        } else {
+          localStorage.setItem(`notes_${currentUser}`, JSON.stringify([]));
+        }
+      } catch (err) {
+        console.error('Lỗi lấy notes:', err);
+        if (window.toast) window.toast('⚠️ Dùng dữ liệu offline', 'info');
+      }
+    };
+    fetchNotes();
+  }, [currentUser]);
   useEffect(() => { localStorage.setItem('appSettings', JSON.stringify(settings)); }, [settings]);
   useEffect(() => { localStorage.setItem('userPrefs', JSON.stringify(prefs)); }, [prefs]);
   useEffect(() => { localStorage.setItem('allLabels', JSON.stringify(allLabels)); }, [allLabels]);
+  useEffect(() => {
+    const fetchSharedNotes = async () => {
+      try {
+        const data = await apiCall('/shares');
+        setSharedWithMe(data.notes || []);
+        const unseen = (data.notes || []).filter(n => !n.is_seen);
+        setNotifications(unseen);
+      } catch (err) { console.error('Lỗi lấy shared notes:', err); }
+    };
+    if (currentUser) fetchSharedNotes();
+  }, [currentUser]);
+
+  // Polling mỗi 10s để kiểm tra note mới được chia sẻ
+  useEffect(() => {
+    if (!currentUser) return;
+    const pollInterval = setInterval(async () => {
+      try {
+        const data = await apiCall(`/shares/poll?since=${encodeURIComponent(lastPollTime)}`);
+        if (data.new_shared && data.new_shared.length > 0) {
+          const newNotes = data.new_shared;
+          setNotifications(prev => [...newNotes, ...prev]);
+          setSharedWithMe(prev => [...newNotes, ...prev]);
+          // Toast notification
+          if (window.toast) {
+            window.toast(`📥 Có ${newNotes.length} note mới được chia sẻ!`, 'info');
+          }
+        }
+        setLastPollTime(data.server_time || new Date().toISOString());
+      } catch (err) { /* ignore polling errors */ }
+    }, 10000);
+    return () => clearInterval(pollInterval);
+  }, [currentUser, lastPollTime]);
+
+  // Immediate refresh khi quay lại tab
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && currentUser) {
+        apiCall('/shares').then(data => {
+          if (data.notes) {
+            setSharedWithMe(data.notes);
+            setNotifications(data.notes.filter(n => !n.is_seen));
+          }
+        }).catch(() => {});
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [currentUser]);
+
   useEffect(() => {
     if (showModal && editorRef.current) {
       const t = setTimeout(() => { if (editorRef.current) editorRef.current.innerHTML = formData.content || ''; }, 60);
@@ -620,13 +828,57 @@ const Home = () => {
 
   const handleCancel = () => { if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current); setShowModal(false); setFormData(defaultNote); if (editorRef.current) editorRef.current.innerHTML = ''; };
 
-  const handleSaveNote = () => {
+  const handleSaveNote = async () => {
     if (!formData.title.trim()) return;
     const content = editorRef.current ? editorRef.current.innerHTML : formData.content;
     const now = new Date().toISOString();
-    const noteToSave = { ...formData, content, updatedAt: now, createdAt: formData.createdAt || now };
-    const updated = formData.id ? notes.map(n => n.id === formData.id ? noteToSave : n) : [{ ...noteToSave, id: Date.now(), createdAt: now }, ...notes];
-    saveNotes(updated); setShowModal(false); setFormData(defaultNote);
+    const serverId = formData.server_id || formData.id;
+    
+    try {
+      let savedNote;
+      if (serverId) {
+        const data = await apiCall(`/notes/${serverId}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            title: formData.title,
+            content,
+            color: formData.color,
+            is_pinned: formData.isPinned,
+            font_family: formData.fontFamily,
+            font_size: formData.fontSize,
+            visibility: formData.visibility,
+            label_ids: (formData.labels || []).map(l => l.id),
+          })
+        });
+        savedNote = data.note;
+      } else {
+        const data = await apiCall('/notes', {
+          method: 'POST',
+          body: JSON.stringify({
+            title: formData.title,
+            content,
+            color: formData.color,
+            is_pinned: formData.isPinned,
+            font_family: formData.fontFamily,
+            font_size: formData.fontSize,
+            visibility: formData.visibility,
+            label_ids: (formData.labels || []).map(l => l.id),
+          })
+        });
+        savedNote = data.note;
+      }
+      
+      const noteToSave = { ...formData, ...savedNote, content, updatedAt: now, createdAt: savedNote.created_at, id: savedNote.id, server_id: savedNote.id };
+      const updated = serverId 
+        ? notes.map(n => n.id === serverId || n.server_id === serverId ? noteToSave : n)
+        : [noteToSave, ...notes];
+      saveNotes(updated);
+    } catch (err) {
+      console.error('Lỗi lưu note:', err);
+      alert('Lỗi lưu note: ' + err.message);
+    }
+    
+    setShowModal(false); setFormData(defaultNote);
     if (editorRef.current) editorRef.current.innerHTML = '';
   };
 
@@ -640,19 +892,50 @@ const Home = () => {
   const handleViewNote = note => {
     if (note.password && !unlockedNotes.has(note.id)) {
       setPasswordError('');
-      setPasswordModal({ mode: 'verify', noteId: note.id, onSuccess: () => { setUnlockedNotes(prev => new Set([...prev, note.id])); setPasswordModal(null); setViewingNote(note); } });
-    } else setViewingNote(note);
+      setPasswordModal({ mode: 'verify', noteId: note.id, onSuccess: () => { setUnlockedNotes(prev => new Set([...prev, note.id])); setPasswordModal(null); setViewingNote(note); if (note.share_id) { setNotifications(prev => prev.filter(n => n.share_id !== note.share_id)); apiCall('/shares/mark-as-seen', { method: 'POST', body: JSON.stringify({ share_id: note.share_id }) }).catch(console.error); } } });
+    } else {
+      setViewingNote(note);
+      if (note.share_id && !note.is_seen) {
+        setNotifications(prev => prev.filter(n => n.share_id !== note.share_id));
+        apiCall('/shares/mark-as-seen', { method: 'POST', body: JSON.stringify({ share_id: note.share_id }) }).catch(console.error);
+      }
+    }
   };
 
   const handleDeleteNote  = id => setConfirmDelete({ id });
-  const confirmDeleteNote = () => {
+  const confirmDeleteNote = async () => {
     if (!confirmDelete) return;
+    const noteToDelete = notes.find(n => n.id === confirmDelete.id);
+    
+    if (noteToDelete?.server_id) {
+      try {
+        await apiCall(`/notes/${noteToDelete.server_id}`, { method: 'DELETE' });
+      } catch (err) {
+        console.error('Lỗi xóa note:', err);
+      }
+    }
+    
     saveNotes(notes.filter(n => n.id !== confirmDelete.id));
     if (selectedDayNotes) setSelectedDayNotes(prev => ({ ...prev, notes: prev.notes.filter(n => n.id !== confirmDelete.id) }));
     setConfirmDelete(null);
   };
 
-  const togglePin = id => saveNotes(notes.map(n => n.id === id ? { ...n, isPinned: !n.isPinned, pinnedAt: !n.isPinned ? new Date().toISOString() : null } : n));
+  const togglePin = async id => {
+    const note = notes.find(n => n.id === id);
+    if (!note?.server_id) {
+      saveNotes(notes.map(n => n.id === id ? { ...n, isPinned: !n.isPinned, pinnedAt: !n.isPinned ? new Date().toISOString() : null } : n));
+      return;
+    }
+    try {
+      await apiCall('/notes/toggle-pin', {
+        method: 'PUT',
+        body: JSON.stringify({ note_id: note.server_id })
+      });
+      saveNotes(notes.map(n => n.id === id ? { ...n, isPinned: !n.isPinned, pinnedAt: !n.isPinned ? new Date().toISOString() : null } : n));
+    } catch (err) {
+      console.error('Lỗi toggle pin:', err);
+    }
+  };
 
   const handleNoteAccess = (note, action) => {
     if (!note.password || unlockedNotes.has(note.id)) { action(note); return; }
@@ -660,15 +943,125 @@ const Home = () => {
     setPasswordModal({ mode: 'verify', noteId: note.id, onSuccess: () => { setUnlockedNotes(prev => new Set([...prev, note.id])); setPasswordModal(null); action(note); } });
   };
 
-  const handlePasswordSubmit = pass => {
+  const handlePasswordSubmit = async (passOrObj) => {
     if (!passwordModal) return;
     const note = notes.find(n => n.id === passwordModal.noteId);
-    if (passwordModal.mode === 'set') { saveNotes(notes.map(n => n.id === passwordModal.noteId ? { ...n, password: pass || null } : n)); setPasswordModal(null); return; }
-    if (note && note.password === pass) { setPasswordError(''); passwordModal.onSuccess(); }
+    const serverId = note?.server_id;
+    
+    if (passwordModal.mode === 'set' || passwordModal.mode === 'change') {
+      const newPassword = passwordModal.mode === 'change' ? passOrObj.newPass : passOrObj;
+      if (!newPassword) {
+        setPasswordModal(null);
+        return;
+      }
+      
+      if (serverId) {
+        try {
+          await apiCall('/notes/lock', {
+            method: 'POST',
+            body: JSON.stringify({ note_id: serverId, password: newPassword })
+          });
+        } catch (err) {
+          if (passwordModal.mode === 'change') {
+            setPasswordError('Mật khẩu cũ không đúng!');
+            return;
+          }
+          console.error('Lỗi đặt mật khẩu:', err);
+        }
+      }
+      
+      if (passwordModal.mode === 'change') {
+        const { currentPass } = passOrObj;
+        if (note && note.password !== currentPass) {
+          setPasswordError('Mật khẩu cũ không đúng!');
+          return;
+        }
+      }
+      saveNotes(notes.map(n => n.id === passwordModal.noteId ? { ...n, password: newPassword, updatedAt: new Date().toISOString() } : n));
+      setPasswordModal(null);
+      return;
+    }
+    
+    if (passwordModal.mode === 'remove') {
+      if (serverId) {
+        try {
+          await apiCall('/notes/lock', {
+            method: 'POST',
+            body: JSON.stringify({ note_id: serverId, password: '' })
+          });
+        } catch (err) {
+          console.error('Lỗi xóa mật khẩu:', err);
+        }
+      }
+      if (note && note.password === passOrObj) {
+        saveNotes(notes.map(n => n.id === passwordModal.noteId ? { ...n, password: null, updatedAt: new Date().toISOString() } : n));
+        setUnlockedNotes(prev => { const s = new Set(prev); s.delete(passwordModal.noteId); return s; });
+        setPasswordModal(null);
+      } else {
+        setPasswordError('Mật khẩu không đúng!');
+      }
+      return;
+    }
+    
+    if (note && note.password === passOrObj) { setPasswordError(''); passwordModal.onSuccess(); }
     else setPasswordError('Mật khẩu không đúng!');
   };
 
-  const handleSaveShare  = (noteId, { shareList, visibility }) => { saveNotes(notes.map(n => n.id === noteId ? { ...n, shareList, visibility, updatedAt: new Date().toISOString() } : n)); setShareModal(null); };
+  const handleSaveShare = async (noteId, { shareList, visibility }) => {
+    const note = notes.find(n => n.id === noteId);
+    if (!note) return;
+    setShareError('');
+    
+    const oldShareList = note.shareList || [];
+    const newShareList = shareList || [];
+    
+    for (const share of newShareList) {
+      if (!oldShareList.find(s => s.email === share.email)) {
+        try {
+          if (note.server_id) {
+            await apiCall('/shares', {
+              method: 'POST',
+              body: JSON.stringify({ note_id: note.server_id, email: share.email, role: share.role })
+            });
+          }
+        } catch (err) {
+          setShareError(err.message || 'Lỗi khi chia sẻ: ' + share.email);
+        }
+      } else {
+        const oldShare = oldShareList.find(s => s.email === share.email);
+        if (oldShare && oldShare.role !== share.role) {
+          try {
+            if (note.server_id) {
+              await apiCall('/shares/role', {
+                method: 'PUT',
+                body: JSON.stringify({ note_id: note.server_id, email: share.email, role: share.role })
+              });
+            }
+          } catch (err) {
+            setShareError('Lỗi cập nhật quyền: ' + share.email);
+          }
+        }
+      }
+    }
+    
+    for (const oldShare of oldShareList) {
+      if (!newShareList.find(s => s.email === oldShare.email)) {
+        try {
+          if (note.server_id) {
+            await apiCall('/shares', {
+              method: 'DELETE',
+              body: JSON.stringify({ note_id: note.server_id, email: oldShare.email })
+            });
+          }
+        } catch (err) {
+          console.error('Lỗi xóa share:', err);
+        }
+      }
+    }
+    
+    saveNotes(notes.map(n => n.id === noteId ? { ...n, shareList, visibility, updatedAt: new Date().toISOString() } : n));
+    setShareModal(null);
+  };
   const handleRevokeShare = (noteId, email) => {
     saveNotes(notes.map(n => n.id === noteId ? { ...n, shareList: (n.shareList || []).filter(s => s.email !== email), updatedAt: new Date().toISOString() } : n));
     if (viewingNote?.id === noteId) setViewingNote(prev => ({ ...prev, shareList: (prev.shareList || []).filter(s => s.email !== email) }));
@@ -719,7 +1112,10 @@ const Home = () => {
   const StatusIcons = ({ note }) => (
     <div className="flex items-center gap-1 flex-shrink-0 flex-wrap">
       {note.isPinned && <span title="Đã ghim" className="text-[13px]">📌</span>}
-      {note.password && <span title="Có mật khẩu" className="text-[13px]">🔒</span>}
+      {note.password && (unlockedNotes.has(note.id)
+        ? <span title="Đã mở khóa" className="text-[13px]">🔓</span>
+        : <span title="Có mật khẩu" className="text-[13px]">🔒</span>
+      )}
       {(note.shareList?.length > 0 || note.visibility !== 'private') && <span title="Đã chia sẻ" className="text-[13px]">🔗</span>}
       {(note.labels || []).slice(0, 3).map(lb => (
         <div key={lb.id} title={lb.name} className="w-2 h-2 rounded-full border border-white/60 flex-shrink-0" style={{ background: lb.color }} />
@@ -760,9 +1156,15 @@ const Home = () => {
           <button onClick={() => setLabelModal({ noteId: note.id })} className={CLS_IBTN_SM} title="Nhãn">🏷️</button>
           <button onClick={() => setShareModal(note)} className={CLS_IBTN_SM} title="Chia sẻ">🔗</button>
           <button onClick={() => {
-            const sp = () => setPasswordModal({ mode: 'set', noteId: note.id });
-            if (note.password && !unlockedNotes.has(note.id)) setPasswordModal({ mode: 'verify', noteId: note.id, onSuccess: () => { setUnlockedNotes(prev => new Set([...prev, note.id])); setPasswordModal(null); sp(); } }); else sp();
-          }} className={CLS_IBTN_SM} title="Mật khẩu" style={{ background: note.password ? '#fef3c7' : undefined }}>🔒</button>
+            if (note.password && unlockedNotes.has(note.id)) {
+              setLockMenu(note);
+            } else {
+              const sp = () => setPasswordModal({ mode: 'set', noteId: note.id });
+              if (note.password && !unlockedNotes.has(note.id)) setPasswordModal({ mode: 'verify', noteId: note.id, onSuccess: () => { setUnlockedNotes(prev => new Set([...prev, note.id])); setPasswordModal(null); sp(); } }); else sp();
+            }
+          }} className={CLS_IBTN_SM} title="Mật khẩu" style={{ background: note.password && unlockedNotes.has(note.id) ? '#dcfce7' : note.password ? '#fef3c7' : undefined }}>
+            {note.password && unlockedNotes.has(note.id) ? '🔓' : '🔒'}
+          </button>
           <button onClick={() => handleDeleteNote(note.id)} className={`${CLS_IBTN_SM} hover:!bg-red-100`} title="Xóa">🗑️</button>
         </div>
       </div>
@@ -805,9 +1207,15 @@ const Home = () => {
             <button onClick={() => setLabelModal({ noteId: note.id })} className={CLS_IBTN_SM} title="Nhãn">🏷️</button>
             <button onClick={() => setShareModal(note)} className={CLS_IBTN_SM} title="Chia sẻ">🔗</button>
             <button onClick={() => {
-              const sp = () => setPasswordModal({ mode: 'set', noteId: note.id });
-              if (note.password && !unlockedNotes.has(note.id)) setPasswordModal({ mode: 'verify', noteId: note.id, onSuccess: () => { setUnlockedNotes(prev => new Set([...prev, note.id])); setPasswordModal(null); sp(); } }); else sp();
-            }} className={CLS_IBTN_SM} style={{ background: note.password ? '#fef3c7' : undefined }} title="Mật khẩu">🔒</button>
+              if (note.password && unlockedNotes.has(note.id)) {
+                setLockMenu(note);
+              } else {
+                const sp = () => setPasswordModal({ mode: 'set', noteId: note.id });
+                if (note.password && !unlockedNotes.has(note.id)) setPasswordModal({ mode: 'verify', noteId: note.id, onSuccess: () => { setUnlockedNotes(prev => new Set([...prev, note.id])); setPasswordModal(null); sp(); } }); else sp();
+              }
+            }} className={CLS_IBTN_SM} style={{ background: note.password && unlockedNotes.has(note.id) ? '#dcfce7' : note.password ? '#fef3c7' : undefined }} title="Mật khẩu">
+              {note.password && unlockedNotes.has(note.id) ? '🔓' : '🔒'}
+            </button>
             <button onClick={() => handleNoteAccess(note, handleEditNote)} className={CLS_IBTN_SM} title="Sửa">✏️</button>
             <button onClick={() => handleDeleteNote(note.id)} className={`${CLS_IBTN_SM} hover:!bg-red-100`} title="Xóa">🗑️</button>
           </div>
@@ -818,7 +1226,7 @@ const Home = () => {
 // component hiển thị danh sách note theo dạng grid hoặc list tùy theo viewMode
   const NoteGrid = ({ noteList }) => (
     <div className={viewMode === 'grid'
-      ? 'grid gap-4 grid-cols-[repeat(auto-fill,minmax(280px,1fr))]'
+      ? 'grid gap-3 sm:gap-4 grid-cols-[repeat(auto-fill,minmax(160px,1fr))] sm:grid-cols-[repeat(auto-fill,minmax(240px,1fr))]'
       : 'flex flex-col gap-4'}>
       {noteList.map(note => <NoteCard key={note.id} note={note} />)}
       {noteList.length === 0 && (
@@ -858,7 +1266,7 @@ const Home = () => {
       {/*nút bật tắt sidebar */}
       <button
         onClick={() => setIsSidebarOpen(v => !v)}
-        className="fixed top-3 left-3 z-[100] w-10 h-10 bg-white dark:bg-slate-800 rounded-xl shadow-md border border-slate-200 dark:border-slate-700 cursor-pointer flex flex-col items-center justify-center gap-1 transition-transform duration-300"
+        className="fixed top-3 left-3 z-[100] w-12 h-12 sm:w-10 sm:h-10 bg-white dark:bg-slate-800 rounded-xl shadow-lg border-2 border-indigo-500 dark:border-indigo-400 cursor-pointer flex flex-col items-center justify-center gap-1 transition-transform duration-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
         style={{ transform: isSidebarOpen ? 'translateX(256px)' : 'translateX(0)' }}>
         {[
           { 
@@ -900,7 +1308,7 @@ const Home = () => {
           {[
             { view: 'calendar',  icon: '📅', label: 'Lịch Cá Nhân'   },
             { view: 'all-notes', icon: '📂', label: 'Tất cả Ghi chú' },
-            { view: 'shared',    icon: '🔗', label: 'Đã chia sẻ', badge: sharedByMe.length },
+            { view: 'shared',    icon: '🔗', label: 'Đã chia sẻ', badge: sharedByMe.length + sharedWithMe.length },
             { view: 'settings',  icon: '⚙️', label: 'Cài đặt'        },
           ].map(item => (
             <button key={item.view}
@@ -960,16 +1368,16 @@ const Home = () => {
               </div>
             </div>
 
-            <div className={`bg-white dark:bg-slate-800 rounded-[18px] shadow-md p-3.5 border border-slate-200 dark:border-slate-700 ${isFlipping ? 'cal-flip' : ''}`}>
+            <div className={`bg-white dark:bg-slate-800 rounded-[18px] shadow-md p-2 sm:p-3.5 border border-slate-200 dark:border-slate-700 ${isFlipping ? 'cal-flip' : ''}`}>
               {/* header ngày */}
-              <div className="grid grid-cols-7 gap-1 mb-1.5">
+              <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-1">
                 {['T2','T3','T4','T5','T6','T7','CN'].map((d, i) => (
-                  <div key={d} className={`text-center font-black text-[11px] py-0.5 ${i === 6 ? 'text-red-500' : 'text-slate-400'}`}>{d}</div>
+                  <div key={d} className={`text-center font-black text-[10px] sm:text-[11px] py-0.5 ${i === 6 ? 'text-red-500' : 'text-slate-400'}`}>{d}</div>
                 ))}
               </div>
               {/* ô ngày */}
-              <div className="grid grid-cols-7 gap-1">
-                {Array.from({ length: startDayIndex }).map((_, i) => <div key={`e${i}`} className="min-h-[78px]" />)}
+              <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
+                {Array.from({ length: startDayIndex }).map((_, i) => <div key={`e${i}`} className="min-h-[60px] sm:min-h-[78px]" />)}
                 {Array.from({ length: daysInMonth }).map((_, i) => {
                   const day      = i + 1, dateStr = getDateStr(day);
                   const notesToday = expandedNotes.filter(n => (n.updatedAt || n.createdAt || '').slice(0, 10) === dateStr);
@@ -979,10 +1387,10 @@ const Home = () => {
                   return (
                     <div key={day}
                       onClick={() => setSelectedDayNotes({ day, dateStr, notes: notesToday, holidays })}
-                      className={`min-h-[78px] p-1.5 rounded-xl border cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-indigo-400 ${isToday ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'}`}>
+                      className={`min-h-[60px] sm:min-h-[78px] p-1 sm:p-1.5 rounded-xl border cursor-pointer transition-all hover:-translate-y-0.5 hover:shadow-md hover:border-indigo-400 ${isToday ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30' : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'}`}>
                       <div className="flex justify-between items-start">
-                        <div className={`w-5.5 h-5.5 flex items-center justify-center rounded-lg text-xs font-black ${isToday ? 'bg-indigo-500 text-white' : isSun ? 'text-red-500' : 'text-slate-700 dark:text-slate-200'}`}
-                          style={{ width: 22, height: 22 }}>{day}</div>
+                        <div className={`w-5 h-5 sm:w-5.5 sm:h-5.5 flex items-center justify-center rounded-lg text-[10px] sm:text-xs font-black ${isToday ? 'bg-indigo-500 text-white' : isSun ? 'text-red-500' : 'text-slate-700 dark:text-slate-200'}`}
+                          style={{ width: 20, height: 20 }}>{day}</div>
                             <span className="hidden sm:inline text-[9px] text-slate-400 font-semibold">{getLunarDay(day, month + 1, year)}</span>
                       </div>
                       <div className="mt-1 flex flex-col gap-0.5">
@@ -1065,7 +1473,7 @@ const Home = () => {
           <div className="fade-up">
             <h1 className={`text-[26px] font-black mb-4 ${isSidebarOpen ? '' : 'pl-11'}`}>🔗 Đã chia sẻ</h1>
             <div className="flex gap-1.5 mb-4 bg-white dark:bg-slate-800 p-1 rounded-xl w-fit border border-slate-200 dark:border-slate-700">
-              {[{ key: 'by-me', label: 'Tôi chia sẻ', icon: '📤', count: sharedByMe.length }, { key: 'with-me', label: 'Được chia sẻ', icon: '📥', count: 0 }].map(tab => (
+              {[{ key: 'by-me', label: 'Tôi chia sẻ', icon: '📤', count: sharedByMe.length }, { key: 'with-me', label: 'Được chia sẻ', icon: '📥', count: sharedWithMe.length, badge: notifications.length }].map(tab => (
                 <button key={tab.key} onClick={() => setSharedSubTab(tab.key)}
                   className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg border-0 cursor-pointer font-extrabold text-sm transition-all font-[inherit] ${sharedSubTab === tab.key ? 'bg-indigo-500 text-white' : 'bg-transparent text-slate-400 hover:text-indigo-500'}`}>
                   <span>{tab.icon}</span><span>{tab.label}</span>
@@ -1085,11 +1493,37 @@ const Home = () => {
             )}
 
             {sharedSubTab === 'with-me' && (
-              <div className="text-center py-16 px-5 text-slate-400">
-                <div className="text-5xl opacity-35 mb-3">📥</div>
-                <p className="font-black text-lg m-0">Tính năng đang phát triển</p>
-                <p className="text-sm mt-1.5">Note được chia sẻ với bạn sẽ xuất hiện ở đây</p>
-              </div>
+              sharedWithMe.length === 0
+                ? <div className="text-center py-16 px-5 text-slate-400">
+                    <div className="text-5xl opacity-35 mb-3">📥</div>
+                    <p className="font-black text-lg m-0">Chưa có note nào được chia sẻ</p>
+                    <p className="text-sm mt-1.5">Khi có người chia sẻ note với bạn, nó sẽ xuất hiện ở đây</p>
+                  </div>
+                : <div className="space-y-3">
+                    {notifications.length > 0 && (
+                      <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800 mb-3">
+                        <div className="text-xs font-extrabold text-amber-700 dark:text-amber-300 flex items-center gap-2">
+                          🔔 Bạn có {notifications.length} note mới được chia sẻ!
+                        </div>
+                      </div>
+                    )}
+                    {sharedWithMe.map(n => (
+                      <div key={n.share_id || n.id}
+                        className="rounded-2xl p-4 shadow-md border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 cursor-pointer hover:-translate-y-0.5 transition-all"
+                        onClick={() => setViewingNote(n)}>
+                        <div className="flex justify-between items-start mb-2">
+                          <h3 className="font-black text-[15px] flex-1">{n.title}</h3>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-extrabold ${n.role === 'editor' ? 'bg-green-100 text-green-700' : 'bg-slate-200 text-slate-600'}`}>
+                            {n.role === 'editor' ? '✏️ Sửa' : '👁️ Xem'}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-500 mb-2">
+                          👤 {n.owner_name || n.owner_email} · {n.shared_at ? new Date(n.shared_at).toLocaleDateString('vi-VN') : ''}
+                        </div>
+                        {!n.is_seen && <span className="text-[10px] bg-amber-500 text-white px-2 py-0.5 rounded-full font-bold">MỚI</span>}
+                      </div>
+                    ))}
+                  </div>
             )}
           </div>
         )}
@@ -1332,11 +1766,11 @@ const Home = () => {
       {/* Modal tạo/sửa ghi chú */}
       {showModal && (
         <div className={CLS_OVERLAY} onClick={handleCancel}>
-          <div className="bg-white dark:bg-slate-800 rounded-[22px] w-full max-w-2xl max-h-[96vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700"
+          <div className="bg-white dark:bg-slate-800 rounded-[22px] w-full max-w-2xl max-h-[96vh] sm:max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700 mx-2 sm:mx-0"
             onClick={e => e.stopPropagation()}>
 
             {/* Modal Header */}
-            <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2.5 flex-shrink-0">
+            <div className="px-3 sm:px-5 py-3 sm:py-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-2 flex-shrink-0">
               <div className="flex-1">
                 <input type="text" placeholder="📝 Tiêu đề ghi chú..." value={formData.title}
                   onChange={e => { setFormData(p => ({ ...p, title: e.target.value })); triggerAutoSave({ ...formData, title: e.target.value }, editorRef.current?.innerHTML || ''); }}
@@ -1348,7 +1782,7 @@ const Home = () => {
             </div>
 
             {/* Toolbar */}
-            <div className="px-3.5 py-2 border-b border-slate-200 dark:border-slate-700 flex flex-wrap gap-1.5 bg-slate-50 dark:bg-slate-900/50 flex-shrink-0">
+            <div className="px-2 sm:px-3.5 py-2 border-b border-slate-200 dark:border-slate-700 flex flex-wrap gap-1 sm:gap-1.5 bg-slate-50 dark:bg-slate-900/50 flex-shrink-0 overflow-x-auto">
               {[['B','bold'],['I','italic'],['U','underline'],['S','strikeThrough']].map(([label, cmd]) => (
                 <button key={cmd} onMouseDown={e => { e.preventDefault(); handleFormat(cmd); }}
                   className={`${CLS_ICON_BTN} w-7 h-7 text-[13px]`}
@@ -1405,7 +1839,7 @@ const Home = () => {
             )}
 
             {/* Bottom bar */}
-            <div className="px-4 py-2.5 border-t border-slate-200 dark:border-slate-700 flex items-center gap-2 flex-wrap flex-shrink-0 bg-slate-50 dark:bg-slate-900/50">
+            <div className="px-2 sm:px-4 py-2 border-t border-slate-200 dark:border-slate-700 flex items-center gap-1 sm:gap-2 flex-wrap flex-shrink-0 bg-slate-50 dark:bg-slate-900/50">
               {/* đổi màu nền ghi chú */}
               <div className="flex gap-1.5 items-center">
                 {NOTE_BG_COLORS.slice(0, 6).map(c => (
@@ -1433,7 +1867,7 @@ const Home = () => {
                   📎 Đính kèm
                   <input type="file" multiple className="hidden" onChange={handleAttachmentAdd} accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt" />
                 </label>
-                <button onClick={() => setPasswordModal({ mode: 'set', noteId: formData.id || 'new' })}
+                <button onClick={() => setPasswordModal({ mode: formData.password ? 'change' : 'set', noteId: formData.id || 'new' })}
                   className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border-0 cursor-pointer text-xs font-extrabold font-[inherit] transition-colors ${formData.password ? 'bg-amber-100' : 'bg-white dark:bg-slate-800 hover:bg-slate-100'}`}>
                   🔒 {formData.password ? 'Đổi MK' : 'Đặt MK'}
                 </button>
@@ -1452,7 +1886,7 @@ const Home = () => {
       )}
       {/* modal chia sẻ ghi chú */}
       {shareModal && (
-        <ShareModal note={shareModal} onClose={() => setShareModal(null)}
+        <ShareModal note={shareModal} error={shareError} onClose={() => { setShareModal(null); setShareError(''); }}
           onSave={({ shareList, visibility }) => handleSaveShare(shareModal.id, { shareList, visibility })} />
       )}
 
@@ -1465,6 +1899,13 @@ const Home = () => {
             } else handlePasswordSubmit(pass);
           }}
           onCancel={() => { setPasswordModal(null); setPasswordError(''); }} />
+      )}
+
+      {lockMenu && (
+        <LockMenuModal note={lockMenu} onClose={() => setLockMenu(null)}
+          onChangePassword={() => { setLockMenu(null); setPasswordModal({ mode: 'change', noteId: lockMenu.id }); }}
+          onRemovePassword={() => { setLockMenu(null); setPasswordModal({ mode: 'remove', noteId: lockMenu.id }); }}
+        />
       )}
 
       {labelModal && (

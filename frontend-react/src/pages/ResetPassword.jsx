@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { apiCall } from '../api';
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -16,14 +17,10 @@ const ResetPassword = () => {
     if (!token) {
       setErr('Token không hợp lệ hoặc đã hết hạn.');
     }
-<<<<<<< HEAD
     // Auth guard: redirect to /home if already logged in (and no reset token)
     const authToken = localStorage.getItem('token') || sessionStorage.getItem('token');
     if (authToken && !token) navigate('/home', { replace: true });
   }, [token, navigate]);
-=======
-  }, [token]);
->>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,16 +36,9 @@ const ResetPassword = () => {
 
     setIsLoading(true);
     try {
-      const { apiCall } = await import('../api');
-<<<<<<< HEAD
       const res = await apiCall('/auth/reset-password', {
         method: 'POST',
         body: JSON.stringify({ token, newPassword: password })
-=======
-      const res = await apiCall('/auth/reset.php', {
-        method: 'POST',
-        body: JSON.stringify({ token, password })
->>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
       });
       if (res.success) {
         setMsg('✅ Đặt lại mật khẩu thành công! Chuyển về trang đăng nhập...');

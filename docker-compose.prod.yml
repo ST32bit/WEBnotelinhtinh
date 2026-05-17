@@ -1,0 +1,59 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: noteapp
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-rootpassword}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-rootpassword}
+      MYSQL_USER: noteapp
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./server-laravel
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8000:80"
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=noteapp
+      - DB_USERNAME=noteapp
+      - DB_PASSWORD=${DB_PASSWORD:-rootpassword}
+      - APP_URL=http://localhost:8000
+    volumes:
+      - ./server-laravel:/var/www/html
+      - storage-data:/var/www/html/storage
+    depends_on:
+      db:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  frontend:
+    build:
+      context: ./frontend-react
+      dockerfile: Dockerfile.prod
+    restart: always
+    ports:
+      - "80:80"
+    environment:
+      - VITE_API_URL=http://localhost:8000/api
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  dbdata:
+  storage-data:

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { apiCall } from '../api';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -10,12 +11,14 @@ const Register = () => {
     confirmPassword: ''
   });
   const [error, setError] = useState('');
+  const [msg, setMsg] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (formData.password !== formData.confirmPassword) {
@@ -24,9 +27,28 @@ const Register = () => {
     }
     
     setError('');
-    alert('Đăng ký thành công, tự động chuyển về Đăng nhập.');
-    
-    navigate('/login');
+    setMsg('');
+    setIsLoading(true);
+
+    try {
+      await apiCall('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: formData.email,
+          username: formData.email.split('@')[0],
+          displayName: formData.displayName,
+          password: formData.password,
+          confirmPassword: formData.confirmPassword
+        })
+      });
+
+      setMsg('Đăng ký thành công! Vui lòng kiểm tra email để kích hoạt tài khoản.');
+      setTimeout(() => navigate('/login'), 2000);
+    } catch (err) {
+      setError(err.message || 'Đăng ký thất bại');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -35,6 +57,7 @@ const Register = () => {
         <h2 className="mb-6 text-center text-3xl font-bold text-gray-800 select-none">Đăng Ký</h2>
         
         {error && <div className="mb-4 rounded-lg bg-red-100 p-3 text-sm text-red-700">{error}</div>}
+        {msg && <div className="mb-4 rounded-lg bg-emerald-100 p-3 text-sm text-emerald-700 font-semibold">{msg}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -73,11 +96,12 @@ const Register = () => {
             />
           </div>
 
-          <button 
-            type="submit" 
-            className="mt-4 w-full rounded-lg bg-blue-600 py-2.5 font-semibold text-white transition hover:translate-y-[-3px] hover:bg-blue-700 select-none"
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="mt-4 w-full rounded-lg bg-blue-600 py-2.5 font-semibold text-white transition hover:translate-y-[-3px] hover:bg-blue-700 disabled:opacity-60 select-none"
           >
-            Tạo Tài Khoản
+            {isLoading ? 'Đang tạo...' : 'Tạo Tài Khoản'}
           </button>
         </form>
 

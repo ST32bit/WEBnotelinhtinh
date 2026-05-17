@@ -1,14 +1,11 @@
-const BASE_URL = 'http://localhost:8000/api';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
 export const apiCall = async (endpoint, options = {}) => {
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
   
   const defaultHeaders = {
     'Content-Type': 'application/json',
-<<<<<<< HEAD
     'Accept': 'application/json',
-=======
->>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
   };
 
@@ -22,28 +19,37 @@ export const apiCall = async (endpoint, options = {}) => {
 
   try {
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
-<<<<<<< HEAD
-    
+
     // Handle 401 Unauthorized — token expired or invalid
     if (response.status === 401) {
-      // Clear stored auth data
-      localStorage.removeItem('token');
-      localStorage.removeItem('currentUser');
-      localStorage.removeItem('displayName');
-      localStorage.removeItem('isActive');
-      sessionStorage.removeItem('token');
-      sessionStorage.removeItem('currentUser');
-      sessionStorage.removeItem('displayName');
-      sessionStorage.removeItem('isActive');
+      const noLogoutEndpoints = [
+        '/auth/login',
+        '/auth/change-password',
+        '/auth/forgot-password',
+        '/auth/reset-password',
+        '/auth/activate'
+      ];
 
-      // Only redirect if not already on auth pages
-      const authPages = ['/login', '/register', '/activate', '/reset-password', '/shared'];
-      if (!authPages.some(p => window.location.pathname.includes(p))) {
-        window.location.href = '/login';
-        return;
+      if (!noLogoutEndpoints.includes(endpoint)) {
+        // Clear stored auth data
+        localStorage.removeItem('token');
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('displayName');
+        localStorage.removeItem('isActive');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('currentUser');
+        sessionStorage.removeItem('displayName');
+        sessionStorage.removeItem('isActive');
+
+        // Only redirect if not already on auth pages
+        const authPages = ['/login', '/register', '/activate', '/reset-password', '/shared'];
+        if (!authPages.some(p => window.location.pathname.includes(p))) {
+          window.location.href = '/login';
+          return;
+        }
       }
 
-      // For auth pages, just parse and throw the error normally
+      // For auth pages or safe endpoints, just parse and throw the error normally
       const data = await response.json().catch(() => ({}));
       throw new Error(data.error || data.message || 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.');
     }
@@ -66,16 +72,30 @@ export const apiCall = async (endpoint, options = {}) => {
         throw new Error(Array.isArray(firstError) ? firstError[0] : firstError);
       }
       throw new Error(data.error || data.message || 'Có lỗi xảy ra từ máy chủ');
-=======
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Có lỗi xảy ra từ máy chủ');
->>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
     }
 
     return data;
   } catch (error) {
+    // Handle offline/network errors
+    if (error.name === 'TypeError' && error.message.includes('fetch')) {
+      console.warn('Offline mode - request failed');
+      throw new Error('Không có kết nối internet. Dữ liệu sẽ được lưu cục bộ.');
+    }
     throw error;
   }
 };
+
+// Check if online
+export const isOnline = () => navigator.onLine;
+
+// Listen for online/offline events
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', () => {
+    console.log('Back online!');
+    if (window.toast) window.toast('✅ Đã kết nối internet', 'success');
+  });
+  window.addEventListener('offline', () => {
+    console.log('Went offline');
+    if (window.toast) window.toast('⚠️ Mất kết nối internet - Chế độ offline', 'error');
+  });
+}

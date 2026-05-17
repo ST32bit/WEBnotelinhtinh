@@ -28,12 +28,8 @@ Route::post('/auth/reset-password', [AuthController::class, 'resetPassword']);
 // Fix 1.3: Public shared note access (no auth required)
 Route::get('/shares/public/{noteId}', [NoteShareController::class, 'showPublic']);
 
-<<<<<<< HEAD
 // Public join route (requires auth - auto-add public note to user's shared list)
 Route::middleware('auth:sanctum')->post('/shares/public-join/{noteId}', [NoteShareController::class, 'publicJoin']);
-
-=======
->>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
 
 // ── PROTECTED ROUTES (cần Sanctum auth) ──
 
@@ -74,11 +70,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Tiêu chí 25: Share
     Route::get('/shares', [NoteShareController::class, 'index']);
+    Route::get('/shares/poll', [NoteShareController::class, 'poll']);
     Route::post('/shares', [NoteShareController::class, 'store']);
     Route::put('/shares/role', [NoteShareController::class, 'updateRole']);
-<<<<<<< HEAD
     Route::post('/shares/mark-as-seen', [NoteShareController::class, 'markAsSeen']);
-=======
->>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
     Route::delete('/shares', [NoteShareController::class, 'destroy']);
 });

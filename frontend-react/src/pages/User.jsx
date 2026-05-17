@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 //biến hằng
 const AVATAR_PRESETS = [
@@ -33,14 +33,23 @@ const User = () => {
   const [email,         setEmail]         = useState(currentUser);
   const [avatar,        setAvatar]        = useState(currentAvatar);
   const [accentCls,     setAccentCls]     = useState(currentAccent);
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword,   setNewPassword]   = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [showPassword,  setShowPassword]  = useState(false);
   const [successMsg,    setSuccessMsg]    = useState('');
   const [errorMsg,      setErrorMsg]      = useState('');
   const [activeTab,     setActiveTab]     = useState('profile');
-  const [showAvatarPicker, setShowAvatarPicker] = useState(false);
 
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (!token) {
+      navigate('/login', { replace: true });
+    }
+  }, [navigate]);
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -67,6 +76,53 @@ const User = () => {
     localStorage.setItem('accentColor', accentCls);
     setSuccessMsg('✅ Lưu thay đổi thành công!');
     setTimeout(() => setSuccessMsg(''), 3000);
+  };
+
+  const handleChangePassword = async (e) => {
+    if (e?.preventDefault) e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    if (!currentPassword || !newPassword) {
+      setErrorMsg('⚠️ Vui lòng nhập đủ mật khẩu hiện tại và mật khẩu mới.');
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      setErrorMsg('⚠️ Mật khẩu mới và xác nhận không khớp.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setErrorMsg('⚠️ Mật khẩu mới phải có ít nhất 6 ký tự.');
+      return;
+    }
+
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (!token) {
+      setErrorMsg('⚠️ Bạn cần đăng nhập để đổi mật khẩu.');
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const { apiCall } = await import('../api');
+      const res = await apiCall('/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify({ currentPassword, newPassword })
+      });
+
+      if (res.success) {
+        setSuccessMsg('✅ Đổi mật khẩu thành công!');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmNewPassword('');
+      } else {
+        setErrorMsg(res.message || '⚠️ Đổi mật khẩu thất bại.');
+      }
+    } catch (err) {
+      setErrorMsg(err.message || '⚠️ Đổi mật khẩu thất bại.');
+    } finally {
+      setIsChangingPassword(false);
+    }
   };
 
   const handleDeleteAccount = () => {
@@ -140,31 +196,7 @@ const User = () => {
                   <div className="w-28 h-28 rounded-3xl border-4 border-white shadow-xl overflow-hidden bg-white">
                     <img src={avatar} alt="Avatar" className="w-full h-full object-cover" />
                   </div>
-                  <button type="button"
-                    onClick={() => setShowAvatarPicker(!showAvatarPicker)}
-                    className="absolute -bottom-2 -right-2 w-9 h-9 bg-white rounded-xl shadow-lg flex items-center justify-center text-lg border-2 border-white hover:scale-110 transition-transform">
-                    📷
-                  </button>
                 </div>
-
-                {showAvatarPicker && (
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-4 border border-white bounce-in w-72">
-                    <p className="text-xs font-black text-gray-400 uppercase tracking-wider mb-3">Chọn Avatar</p>
-                    <div className="grid grid-cols-4 gap-2 mb-3">
-                      {AVATAR_PRESETS.map(p => (
-                        <img key={p.seed} src={p.url} alt={p.seed}
-                          onClick={() => { setAvatar(p.url); setShowAvatarPicker(false); }}
-                          className={`avatar-preset ${avatar === p.url ? 'selected' : ''}`} />
-                      ))}
-                    </div>
-                    <button type="button"
-                      onClick={() => { setShowAvatarPicker(false); fileInputRef.current.click(); }}
-                      className="w-full py-2.5 rounded-2xl bg-indigo-50 text-indigo-700 font-black text-sm hover:bg-indigo-100 transition border border-indigo-100">
-                      📁 Tải ảnh từ máy tính
-                    </button>
-                    <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
-                  </div>
-                )}
               </div>
 
               <h1 className="text-3xl font-black text-white drop-shadow-sm">{displayName}</h1>
@@ -182,7 +214,8 @@ const User = () => {
             ))}
           </div>
 
-          <form onSubmit={handleSave} className="p-6 sm:p-8">
+          <div className="p-6 sm:p-8">
+            <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
 
             {successMsg && (
               <div className="mb-5 bg-emerald-50 text-emerald-700 p-4 rounded-2xl font-bold border border-emerald-200 text-center bounce-in">
@@ -196,7 +229,7 @@ const User = () => {
             )}
 
             {activeTab === 'profile' && (
-              <div className="space-y-5 fade-up">
+              <form onSubmit={handleSave} className="space-y-5 fade-up">
                 <div>
                   <label className="field-label">Tên hiển thị</label>
                   <input type="text" required value={displayName}
@@ -209,7 +242,11 @@ const User = () => {
                     onChange={e => setEmail(e.target.value)}
                     className="field-input" placeholder="email@example.com" />
                 </div>
-              </div>
+                <button type="submit"
+                  className={`w-full py-4 rounded-2xl bg-gradient-to-r ${accentCls} text-white font-black text-lg shadow-xl hover:opacity-90 hover:-translate-y-0.5 transition-all`}>
+                  💾 Lưu thay đổi
+                </button>
+              </form>
             )}
 
             {activeTab === 'security' && (
@@ -225,6 +262,7 @@ const User = () => {
                 <div>
                   <label className="field-label">Mật khẩu hiện tại</label>
                   <input type="password" placeholder="Nhập mật khẩu hiện tại..."
+                    value={currentPassword} onChange={e => setCurrentPassword(e.target.value)}
                     className="field-input" />
                 </div>
 
@@ -275,13 +313,22 @@ const User = () => {
                 <div>
                   <label className="field-label">Xác nhận mật khẩu mới</label>
                   <input type="password" placeholder="Nhập lại mật khẩu mới..."
+                    value={confirmNewPassword} onChange={e => setConfirmNewPassword(e.target.value)}
                     className="field-input" />
                 </div>
+
+                <button
+                  type="button"
+                  onClick={handleChangePassword}
+                  disabled={isChangingPassword}
+                  className="w-full py-3 rounded-2xl bg-indigo-600 text-white font-black hover:bg-indigo-700 transition disabled:opacity-60">
+                  {isChangingPassword ? 'Đang đổi...' : 'Đổi mật khẩu'}
+                </button>
               </div>
             )}
 
             {activeTab === 'appearance' && (
-              <div className="space-y-6 fade-up">
+              <form onSubmit={handleSave} className="space-y-6 fade-up">
                 <div>
                   <label className="field-label">Màu chủ đạo (Header gradient)</label>
                   <div className="flex gap-3 flex-wrap mt-2">
@@ -312,7 +359,6 @@ const User = () => {
                     className="w-full py-4 rounded-2xl border-2 border-dashed border-gray-300 text-gray-500 font-black hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all flex items-center justify-center gap-3">
                     <span className="text-2xl">📁</span> Chọn ảnh (tối đa 5MB)
                   </button>
-                  <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageUpload} className="hidden" />
                 </div>
 
                 <div className={`rounded-3xl p-6 bg-gradient-to-r ${accentCls} flex items-center gap-4`}>
@@ -324,7 +370,11 @@ const User = () => {
                     <p className="text-white/70 text-sm font-bold">🎓 {email}</p>
                   </div>
                 </div>
-              </div>
+                <button type="submit"
+                  className={`w-full py-4 rounded-2xl bg-gradient-to-r ${accentCls} text-white font-black text-lg shadow-xl hover:opacity-90 hover:-translate-y-0.5 transition-all`}>
+                  💾 Lưu thay đổi
+                </button>
+              </form>
             )}
 
             <div className="flex flex-col sm:flex-row gap-3 mt-8 pt-6 border-t border-gray-100">
@@ -336,12 +386,8 @@ const User = () => {
                 className="flex-1 py-4 rounded-2xl bg-red-50 text-red-600 font-black hover:bg-red-500 hover:text-white transition-all border border-red-200">
                 🗑️ Xóa tài khoản
               </button>
-              <button type="submit"
-                className={`flex-[2] py-4 rounded-2xl bg-gradient-to-r ${accentCls} text-white font-black text-lg shadow-xl hover:opacity-90 hover:-translate-y-0.5 transition-all`}>
-                💾 Lưu thay đổi
-              </button>
             </div>
-          </form>
+          </div>
         </div>
       </div>
     </div>

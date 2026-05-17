@@ -17,18 +17,11 @@ class NoteShareController extends Controller
             ->where('shared_with', $request->user()->id)
             ->orderByDesc('created_at')
             ->get()
-<<<<<<< HEAD
             ->filter(fn ($s) => $s->note !== null)
             ->map(fn ($s) => array_merge($s->note->toArray(), [
                 'share_id'    => $s->id,
                 'role'        => $s->role,
                 'is_seen'     => (bool)$s->is_seen,
-=======
-            ->filter(fn ($s) => $s->note !== null) // safety: skip deleted notes
-            ->map(fn ($s) => array_merge($s->note->toArray(), [
-                'share_id'    => $s->id,
-                'role'        => $s->role,
->>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
                 'owner_name'  => $s->owner->display_name,
                 'owner_email' => $s->owner->email,
                 'shared_at'   => $s->created_at->toDateTimeString(),
@@ -46,12 +39,8 @@ class NoteShareController extends Controller
             'role'    => 'nullable|in:viewer,editor',
         ]);
 
-<<<<<<< HEAD
         $user   = $request->user();
         $userId = $user->id;
-=======
-        $userId = $request->user()->id;
->>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
         $note   = Note::where('id', $request->note_id)->where('user_id', $userId)->firstOrFail();
         $target = User::where('email', $request->email)->where('is_active', true)->first();
 
@@ -62,7 +51,6 @@ class NoteShareController extends Controller
             return response()->json(['error' => 'Không thể chia sẻ với chính mình'], 400);
         }
 
-<<<<<<< HEAD
         $isNew = !SharedNote::where('note_id', $note->id)->where('shared_with', $target->id)->exists();
 
         $share = SharedNote::updateOrCreate(
@@ -99,25 +87,12 @@ class NoteShareController extends Controller
         }
 
         $share->load('sharedUser');
-=======
-        $share = SharedNote::updateOrCreate(
-            ['note_id' => $note->id, 'shared_with' => $target->id],
-            ['owner_id' => $userId, 'role' => $request->input('role', 'viewer')]
-        );
-
-        // Load share details for response
-        $share->load('sharedUser');
-
->>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
         return response()->json([
             'success' => true,
             'message' => "Đã chia sẻ với {$request->email}",
             'share'   => [
                 'id'           => $share->id,
-<<<<<<< HEAD
                 'shared_with'  => $share->shared_with,
-=======
->>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
                 'role'         => $share->role,
                 'email'        => $share->sharedUser->email,
                 'display_name' => $share->sharedUser->display_name,
@@ -125,7 +100,6 @@ class NoteShareController extends Controller
         ]);
     }
 
-<<<<<<< HEAD
     /** Tiêu chí 25: Đánh dấu đã xem thông báo */
     public function markAsSeen(Request $request): JsonResponse
     {
@@ -137,9 +111,6 @@ class NoteShareController extends Controller
 
         return response()->json(['success' => true]);
     }
-
-=======
->>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
     /** Tiêu chí 25: Cập nhật quyền chia sẻ */
     public function updateRole(Request $request): JsonResponse
     {
@@ -238,8 +209,6 @@ class NoteShareController extends Controller
             'owner'   => $note->user,
         ]);
     }
-<<<<<<< HEAD
-
     /**
      * Public Join: Auto-add a public note to user's shared list (view-only)
      * When an authenticated user visits a public link, this creates a SharedNote record
@@ -279,6 +248,34 @@ class NoteShareController extends Controller
             'owner' => $note->user,
         ]);
     }
-=======
->>>>>>> a518c7f15ee7892eb351a53417168a339bed928d
+
+    /**
+     * Tiêu chí 26: Poll for new shared notes
+     */
+    public function poll(Request $request): JsonResponse
+    {
+        $since = $request->input('since', now()->subSeconds(30)->toDateTimeString());
+        $user  = $request->user();
+
+        $newShares = SharedNote::with(['note', 'owner'])
+            ->where('shared_with', $user->id)
+            ->where('created_at', '>', $since)
+            ->where('is_seen', false)
+            ->get()
+            ->filter(fn ($s) => $s->note !== null)
+            ->map(fn ($s) => array_merge($s->note->toArray(), [
+                'share_id'    => $s->id,
+                'role'        => $s->role,
+                'is_seen'     => false,
+                'owner_name'  => $s->owner->display_name,
+                'owner_email' => $s->owner->email,
+                'shared_at'   => $s->created_at->toDateTimeString(),
+            ]));
+
+        return response()->json([
+            'success' => true,
+            'new_shared' => $newShares->values(),
+            'server_time' => now()->toDateTimeString(),
+        ]);
+    }
 }
