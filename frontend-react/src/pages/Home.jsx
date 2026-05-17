@@ -283,23 +283,43 @@ const LockMenuModal = ({ note, onClose, onChangePassword, onRemovePassword }) =>
 };
 //share modal, chia sẻ note với người khác qua email, thiết lập quyền xem/sửa và chế độ hiển thị của note khi chia sẻ
 const ShareModal = ({ note, onClose, onSave, error }) => {
-  const [shareList, setShareList] = useState(note.shareList || []);
-  const [email, setEmail]         = useState('');
-  const [role, setRole]           = useState('viewer');
-  const [visibility, setVisibility] = useState(note.visibility || 'private');
-  const [validating, setValidating] = useState(false);
+  // Chặn note bị khóa mật khẩu
+  if (note.password) {
+    return (
+      <div className={CLS_OVERLAY} onClick={onClose}>
+        <div className={`${CLS_BOX} max-w-sm`} onClick={e => e.stopPropagation()}>
+          <div className="text-center mb-5">
+            <div className="text-5xl mb-2">🔒</div>
+            <h3 className="text-lg font-black m-0">Không thể chia sẻ</h3>
+            <p className="text-sm text-slate-400 mt-2">Note có mật khẩu không thể chia sẻ. Hãy xóa mật khẩu trước.</p>
+          </div>
+          <button onClick={onClose} className={`${CLS_BTN_SEC} w-full`}>Đóng</button>
+        </div>
+      </div>
+    );
+  }
 
-  const addShare = async () => {
+  const [shareList, setShareList]     = useState(note.shareList || []);
+  const [email, setEmail]             = useState('');
+  const [role, setRole]               = useState('viewer');
+  const [visibility, setVisibility]   = useState(note.visibility || 'private');
+  const [copied, setCopied]           = useState(false);
+
+  const publicLink = `${window.location.origin}/shared/${note.server_id || note.id}`;
+
+  const copyLink = () => {
+    navigator.clipboard.writeText(publicLink).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  const addShare = () => {
     const e2 = email.trim().toLowerCase();
     if (!e2 || !/\S+@\S+\.\S+/.test(e2) || shareList.find(s => s.email === e2)) return;
-    setShareList([...shareList, { email: e2, role, status: 'pending' }]); setEmail('');
+    setShareList([...shareList, { email: e2, role, status: 'pending' }]);
+    setEmail('');
   };
-//vis: chế độ hiển thị
-  const visOptions = [
-    { v: 'private', icon: '🔒', label: 'Riêng tư' },
-    { v: 'link',    icon: '🔗', label: 'Qua link'  },
-    { v: 'public',  icon: '🌍', label: 'Công khai'  },
-  ];
 
   return (
     <div className={CLS_OVERLAY} onClick={onClose}>
@@ -309,96 +329,99 @@ const ShareModal = ({ note, onClose, onSave, error }) => {
           <button onClick={onClose} className={CLS_ICON_BTN}>✕</button>
         </div>
 
+        {/* 2 nút chế độ */}
         <div className="mb-4">
           <span className={CLS_LABEL}>Chế độ hiển thị</span>
-          <div className="grid grid-cols-3 gap-2">
-            {visOptions.map(o => (
+          <div className="grid grid-cols-2 gap-2">
+            {[
+              { v: 'private', icon: '🔒', label: 'Riêng tư', desc: 'Chia sẻ qua email' },
+              { v: 'public',  icon: '🌍', label: 'Công khai', desc: 'Ai có link đều xem được' },
+            ].map(o => (
               <button key={o.v} type="button" onClick={() => setVisibility(o.v)}
-                className={`p-2.5 rounded-xl border-2 text-center cursor-pointer transition-all font-[inherit] ${visibility === o.v ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30' : 'border-slate-200 dark:border-slate-600 bg-transparent'}`}>
-                <div className="text-xl mb-1">{o.icon}</div>
-                <div className="text-[11px] font-extrabold">{o.label}</div>
+                className={`p-3 rounded-xl border-2 text-center cursor-pointer transition-all font-[inherit] ${visibility === o.v ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30' : 'border-slate-200 dark:border-slate-600 bg-transparent hover:border-indigo-300'}`}>
+                <div className="text-2xl mb-1">{o.icon}</div>
+                <div className="text-[12px] font-black">{o.label}</div>
+                <div className="text-[10px] text-slate-400 mt-0.5">{o.desc}</div>
               </button>
             ))}
           </div>
         </div>
 
-        {(shareList.length > 0 || note.shareList?.length > 0) && (
-          <div className="mb-4 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-200 dark:border-indigo-800">
-            <div className="text-xs font-extrabold text-indigo-700 dark:text-indigo-300">
-              📊 Đã chia sẻ với {shareList.length} người
+        {/* Khi chọn Công khai: hiện link */}
+        {visibility === 'public' && (
+          <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
+            <div className="text-xs font-black text-green-700 dark:text-green-300 mb-2">🌍 Link công khai</div>
+            <div className="flex gap-2 items-center">
+              <div className="flex-1 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg px-2.5 py-2 text-[11px] font-bold text-slate-600 dark:text-slate-300 truncate">
+                {publicLink}
+              </div>
+              <button onClick={copyLink}
+                className={`px-3 py-2 rounded-lg border-0 cursor-pointer text-xs font-black font-[inherit] transition-colors flex-shrink-0 ${copied ? 'bg-green-500 text-white' : 'bg-indigo-500 text-white hover:bg-indigo-600'}`}>
+                {copied ? '✅ Đã copy' : '📋 Copy'}
+              </button>
+            </div>
+            <p className="text-[10px] text-green-600 dark:text-green-400 mt-2 font-semibold">
+              ⚠️ Bất kỳ ai có link này đều có thể xem note của bạn
+            </p>
+          </div>
+        )}
+
+        {/* Khi chọn Riêng tư: hiện form email */}
+        {visibility === 'private' && (
+          <div className="mb-4">
+            <span className={CLS_LABEL}>Chia sẻ qua email</span>
+            <div className="flex gap-2 mb-2">
+              <input type="email" placeholder="Email..." value={email}
+                onChange={e => setEmail(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && addShare()}
+                className={`${CLS_INPUT} flex-1`} />
+              <select value={role} onChange={e => setRole(e.target.value)}
+                className={`${CLS_INPUT} w-24 text-xs max-w-24 bg-white dark:bg-slate-700 cursor-pointer`}>
+                <option value="viewer">👁️ Xem</option>
+                <option value="editor">✏️ Sửa</option>
+              </select>
+              <button onClick={addShare} className={`${CLS_BTN_PRI} px-3.5`}>+</button>
+            </div>
+            <div className="max-h-40 overflow-y-auto flex flex-col gap-1.5 pr-1">
+              {shareList.map(s => (
+                <div key={s.email} className="flex items-center gap-2.5 px-3 py-2 bg-slate-50 dark:bg-slate-700 rounded-xl">
+                  <div className="w-7 h-7 shrink-0 rounded-lg bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center font-black text-xs text-indigo-600 dark:text-indigo-300">
+                    {s.email[0].toUpperCase()}
+                  </div>
+                  <span className="flex-1 min-w-0 text-[13px] font-bold truncate">{s.email}</span>
+                  <select value={s.role}
+                    onChange={e => setShareList(shareList.map(x => x.email === s.email ? { ...x, role: e.target.value } : x))}
+                    className="shrink-0 text-[11px] font-extrabold border-0 bg-transparent text-slate-700 dark:text-slate-300 cursor-pointer focus:ring-0 outline-none">
+                    <option value="viewer">👁️ Xem</option>
+                    <option value="editor">✏️ Sửa</option>
+                  </select>
+                  <button onClick={() => setShareList(shareList.filter(x => x.email !== s.email))}
+                    className="w-5 h-5 shrink-0 flex items-center justify-center rounded-md bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 cursor-pointer font-black text-[10px] transition-colors hover:bg-red-200">
+                    ✕
+                  </button>
+                </div>
+              ))}
+              {shareList.length === 0 && (
+                <div className="text-center text-slate-400 text-[13px] py-2.5">Chưa chia sẻ với ai</div>
+              )}
             </div>
           </div>
         )}
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
-            <div className="text-xs font-extrabold text-red-600 dark:text-red-400">
-              ⚠️ {error}
-            </div>
+          <div className="mb-3 p-3 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
+            <div className="text-xs font-extrabold text-red-600 dark:text-red-400">⚠️ {error}</div>
           </div>
         )}
 
-        <div className="mb-4">
-          <span className={CLS_LABEL}>Thêm người</span>
-          <div className="flex gap-2 mb-2">
-            <input type="email" placeholder="Email..." value={email} onChange={e => setEmail(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && addShare()} className={`${CLS_INPUT} flex-1`} />
-            <select value={role} onChange={e => setRole(e.target.value)}
-              className={`${CLS_INPUT} w-24 text-xs max-w-24 bg-white dark:bg-slate-700 cursor-pointer`}>
-              <option value="viewer">👁️ Xem</option>
-              <option value="editor">✏️ Sửa</option>
-            </select>
-            <button onClick={addShare} className={`${CLS_BTN_PRI} px-3.5`}>+</button>
-          </div>
-<div className="max-h-40 overflow-y-auto flex flex-col gap-1.5 pr-1">
-  {shareList.map(s => (
-    <div key={s.email} className="flex items-center gap-2.5 px-3 py-2 bg-slate-50 dark:bg-slate-700 rounded-xl">
-      
-      {/* Avatar: Thêm shrink-0 */}
-      <div className="w-7 h-7 shrink-0 rounded-lg bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center font-black text-xs text-indigo-600 dark:text-indigo-300">
-        {s.email[0].toUpperCase()}
-      </div>
-      
-      {/* Email: Thêm min-w-0 là cực kỳ quan trọng để truncate hoạt động trong flex */}
-      <span className="flex-1 min-w-0 text-[13px] font-bold truncate">
-        {s.email}
-      </span>
-      
-      {/* Select: Thêm shrink-0 và bỏ viền focus */}
-      <select 
-        value={s.role}
-        onChange={e => setShareList(shareList.map(x => x.email === s.email ? { ...x, role: e.target.value } : x))}
-        className="shrink-0 text-[11px] font-extrabold border-0 bg-transparent text-slate-700 dark:text-slate-300 cursor-pointer focus:ring-0 outline-none">
-        <option value="viewer">👁️ Xem</option>
-        <option value="editor">✏️ Sửa</option>
-      </select>
-      
-      {/* Button: Thêm shrink-0, flex canh giữa dấu X, thêm hover & dark mode */}
-      <button 
-        onClick={() => setShareList(shareList.filter(x => x.email !== s.email))}
-        className="w-5 h-5 shrink-0 flex items-center justify-center rounded-md bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 cursor-pointer font-black text-[10px] transition-colors hover:bg-red-200 dark:hover:bg-red-900/60">
-        ✕
-      </button>
-      
-    </div>
-  ))}
-  
-  {shareList.length === 0 && (
-    <div className="text-center text-slate-400 text-[13px] py-2.5">
-      Chưa chia sẻ với ai
-    </div>
-  )}
-</div>
-        </div>
-
-        <button onClick={() => onSave({ shareList, visibility })} className={`${CLS_BTN_PRI} w-full py-3`}>
+        <button onClick={() => onSave({ shareList: visibility === 'private' ? shareList : [], visibility })}
+          className={`${CLS_BTN_PRI} w-full py-3`}>
           💾 Lưu cài đặt chia sẻ
         </button>
       </div>
     </div>
   );
 };
-
 //modal xem note với đầy đủ thông tin, nội dung, tệp đính kèm và chi tiết chia sẻ, có nút sửa và đóng
 const ViewNoteModal = ({ note, onClose, onEdit, onRevokeShare }) => (
   <div className={CLS_OVERLAY} onClick={onClose}>
@@ -468,9 +491,9 @@ const ViewNoteModal = ({ note, onClose, onEdit, onRevokeShare }) => (
         {(note.shareList?.length > 0 || note.visibility !== 'private') && (
           <div className="mt-4 pt-3.5 border-t border-black/10">
             <span className={CLS_LABEL}>🔗 Chi tiết chia sẻ</span>
-            {note.visibility !== 'private' && (
+            {note.visibility === 'public' && (
               <div className="flex items-center gap-2 px-3 py-2 bg-white/60 rounded-xl mb-2 text-sm font-bold text-slate-700">
-                {note.visibility === 'public' ? '🌍 Công khai với mọi người' : '🔗 Truy cập qua link'}
+                🌍 Công khai với mọi người
               </div>
             )}
             {(note.shareList || []).map(s => (
