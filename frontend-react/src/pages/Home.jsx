@@ -868,6 +868,24 @@ const Home = () => {
         savedNote = data.note;
       }
       
+      // Upload attachments if any (only for new notes or local attachments)
+      if (formData.attachments && formData.attachments.length > 0) {
+        const localAttachments = formData.attachments.filter(a => a.data && a.data.startsWith('data:'));
+        if (localAttachments.length > 0 && savedNote.id) {
+          for (const att of localAttachments) {
+            try {
+              const response = await fetch(att.data);
+              const blob = await response.blob();
+              const file = new File([blob], att.name, { type: att.type });
+              const formData2 = new FormData();
+              formData2.append('note_id', savedNote.id);
+              formData2.append('files[]', file);
+              await apiCall('/attachments', { method: 'POST', body: formData2 });
+            } catch (e) { console.error('Lỗi upload attachment:', e); }
+          }
+        }
+      }
+      
       const noteToSave = { ...formData, ...savedNote, content, updatedAt: now, createdAt: savedNote.created_at, id: savedNote.id, server_id: savedNote.id };
       const updated = serverId 
         ? notes.map(n => n.id === serverId || n.server_id === serverId ? noteToSave : n)
@@ -1087,10 +1105,34 @@ const Home = () => {
     range.selectNodeContents(editorRef.current); sel.removeAllRanges(); sel.addRange(range);
     document.execCommand('foreColor', false, color); sel.removeAllRanges(); editorRef.current.focus();
   };
-  const handleAttachmentAdd = e => {
+  const handleAttachmentAdd = async e => {
     const files = Array.from(e.target.files); if (!files.length) return;
-    Promise.all(files.map(f => new Promise(res => { const r = new FileReader(); r.onloadend = () => res({ name: f.name, type: f.type, size: f.size, data: r.result }); r.readAsDataURL(f); })))
-      .then(results => setFormData(prev => ({ ...prev, attachments: [...(prev.attachments || []), ...results] })));
+    const currentServerId = formData.server_id || formData.id;
+    
+    if (currentServerId) {
+      const formData2 = new FormData();
+      formData2.append('note_id', currentServerId);
+      files.forEach(f => formData2.append('files[]', f));
+      
+      try {
+        const data = await apiCall('/attachments', { method: 'POST', body: formData2 });
+        if (data.attachments) {
+          const newAttachments = data.attachments.map(a => ({
+            name: a.file_name,
+            type: a.file_type,
+            data: `/storage/${a.file_path}`,
+            server_id: a.id
+          }));
+          setFormData(prev => ({ ...prev, attachments: [...(prev.attachments || []), ...newAttachments] }));
+        }
+      } catch (err) {
+        console.error('Lỗi upload attachment:', err);
+        alert('Lỗi upload file: ' + err.message);
+      }
+    } else {
+      Promise.all(files.map(f => new Promise(res => { const r = new FileReader(); r.onloadend = () => res({ name: f.name, type: f.type, size: f.size, data: r.result }); r.readAsDataURL(f); })))
+        .then(results => setFormData(prev => ({ ...prev, attachments: [...(prev.attachments || []), ...results] })));
+    }
     e.target.value = '';
   };
 

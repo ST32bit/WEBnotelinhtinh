@@ -3,7 +3,12 @@ const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 export const apiCall = async (endpoint, options = {}) => {
   const token = localStorage.getItem('token') || sessionStorage.getItem('token');
   
-  const defaultHeaders = {
+  const isFormData = options.body instanceof FormData;
+  
+  const defaultHeaders = isFormData ? {
+    'Accept': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+  } : {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
     ...(token ? { 'Authorization': `Bearer ${token}` } : {})
@@ -13,7 +18,7 @@ export const apiCall = async (endpoint, options = {}) => {
     ...options,
     headers: {
       ...defaultHeaders,
-      ...options.headers,
+      ...(options.headers || {}),
     },
   };
 
