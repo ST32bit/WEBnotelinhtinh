@@ -762,21 +762,18 @@ const Home = () => {
   };
 
   const saveNotes = updated => { setNotes(updated); localStorage.setItem(`notes_${currentUser}`, JSON.stringify(updated)); };
-//tự động lưu khi chỉnh sửa note trong modal, debounce 600ms, có thay đổi mới thì mới lưu, nếu title và content đều trống thì không lưu
+//tự động lưu khi chỉnh sửa note trong modal, debounce 600ms, chỉ lưu local không tạo note mới
   const triggerAutoSave = useCallback((data, content) => {
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     autoSaveTimer.current = setTimeout(() => {
       if (!data.title?.trim() && !content?.trim()) return;
+      // Chỉ auto-save khi note đã có server_id hoặc đã có local id
+      if (!data.id && !data.server_id) return;
       const now = new Date().toISOString();
       const noteToSave = { ...data, content, updatedAt: now };
       setNotes(prev => {
-        let updated;
-        if (data.id) { updated = prev.map(n => n.id === data.id ? noteToSave : n); }
-        else {
-          const newId = Date.now();
-          updated = [{ ...noteToSave, id: newId, createdAt: now }, ...prev];
-          setFormData(fd => ({ ...fd, id: newId, createdAt: now, updatedAt: now }));
-        }
+        const targetId = data.server_id || data.id;
+        const updated = prev.map(n => (n.id === targetId || n.server_id === targetId) ? noteToSave : n);
         localStorage.setItem(`notes_${currentUser}`, JSON.stringify(updated));
         return updated;
       });
@@ -887,9 +884,16 @@ const Home = () => {
       }
       
       const noteToSave = { ...formData, ...savedNote, content, updatedAt: now, createdAt: savedNote.created_at, id: savedNote.id, server_id: savedNote.id };
-      const updated = formData.server_id
-        ? notes.map(n => n.id === formData.server_id || n.server_id === formData.server_id ? noteToSave : n)
-        : [noteToSave, ...notes];
+      
+      // Nếu tạo note mới, xóa note local trùng (để tránh tạo 2 note)
+      let updated;
+      if (formData.server_id) {
+        updated = notes.map(n => n.id === formData.server_id || n.server_id === formData.server_id ? noteToSave : n);
+      } else {
+        // Xóa note local cùng title (nếu có) để tránh trùng lặp
+        const titleToRemove = formData.title;
+        updated = [noteToSave, ...notes.filter(n => n.title !== titleToRemove || n.server_id)];
+      }
       saveNotes(updated);
     } catch (err) {
       console.error('Lỗi lưu note:', err);
