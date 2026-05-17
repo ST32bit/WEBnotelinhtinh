@@ -643,6 +643,7 @@ const Home = () => {
   const [notifications, setNotifications] = useState([]);
   const [shareError, setShareError] = useState('');
   const [lastPollTime, setLastPollTime] = useState(() => new Date().toISOString());
+  const [isSaving, setIsSaving] = useState(false);
 
   const [prefs, setPrefs] = useState(() =>
     JSON.parse(localStorage.getItem('userPrefs') || JSON.stringify({ fontSize: 14, fontFamily: 'Nunito', defaultColor: '#fef08a' })));
@@ -762,22 +763,15 @@ const Home = () => {
   };
 
   const saveNotes = updated => { setNotes(updated); localStorage.setItem(`notes_${currentUser}`, JSON.stringify(updated)); };
-//tự động lưu khi chỉnh sửa note - CHỈ khi đã có server_id (đã được lưu trên server)
+// Auto-save CHỈ cập nhật formData, KHÔNG lưu vào notes array
   const triggerAutoSave = useCallback((data, content) => {
     if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
     autoSaveTimer.current = setTimeout(() => {
       if (!data.title?.trim() && !content?.trim()) return;
-      // Chỉ auto-save KHI ĐÃ CÓ server_id - note đã được lưu trên server rồi
-      if (!data.server_id) return;
-      const now = new Date().toISOString();
-      const noteToSave = { ...data, content, updatedAt: now };
-      setNotes(prev => {
-        const updated = prev.map(n => (n.server_id === data.server_id) ? noteToSave : n);
-        localStorage.setItem(`notes_${currentUser}`, JSON.stringify(updated));
-        return updated;
-      });
+      // Chỉ cập nhật formData tạm thời, KHÔNG lưu vào notes
+      setFormData(prev => ({ ...prev, content, title: data.title }));
     }, 600);
-  }, [currentUser]);
+  }, []);
 // các hàm xử lý logic chính
   const getHolidaysForDate = useCallback(dateStr => {
     const [y, m, d] = dateStr.split('-').map(Number);
