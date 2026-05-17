@@ -1,6 +1,6 @@
 # 📝 NoteApp — Dự án cuối kỳ 503073
 
-Ứng dụng ghi chú full-stack hiện đại, xây dựng bằng **React 19 + Laravel 11**, triển khai qua **Docker Compose**.
+Ứng dụng ghi chú hiện đại, xây dựng bằng **React 19 + Laravel 11**, triển khai qua **Docker Compose**.
 
 ---
 
