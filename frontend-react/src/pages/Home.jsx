@@ -832,12 +832,13 @@ const Home = () => {
     if (!formData.title.trim()) return;
     const content = editorRef.current ? editorRef.current.innerHTML : formData.content;
     const now = new Date().toISOString();
-    const serverId = formData.server_id || formData.id;
     
     try {
       let savedNote;
-      if (serverId) {
-        const data = await apiCall(`/notes/${serverId}`, {
+      
+      // Chỉ update nếu đã có server_id (note đã được lưu trên server)
+      if (formData.server_id) {
+        const data = await apiCall(`/notes/${formData.server_id}`, {
           method: 'PUT',
           body: JSON.stringify({
             title: formData.title,
@@ -852,6 +853,7 @@ const Home = () => {
         });
         savedNote = data.note;
       } else {
+        // Tạo note mới trên server
         const data = await apiCall('/notes', {
           method: 'POST',
           body: JSON.stringify({
@@ -868,27 +870,25 @@ const Home = () => {
         savedNote = data.note;
       }
       
-      // Upload attachments if any (only for new notes or local attachments)
-      if (formData.attachments && formData.attachments.length > 0) {
+      // Upload local attachments (base64) after note is created
+      if (formData.attachments && formData.attachments.length > 0 && savedNote?.id) {
         const localAttachments = formData.attachments.filter(a => a.data && a.data.startsWith('data:'));
-        if (localAttachments.length > 0 && savedNote.id) {
-          for (const att of localAttachments) {
-            try {
-              const response = await fetch(att.data);
-              const blob = await response.blob();
-              const file = new File([blob], att.name, { type: att.type });
-              const formData2 = new FormData();
-              formData2.append('note_id', savedNote.id);
-              formData2.append('files[]', file);
-              await apiCall('/attachments', { method: 'POST', body: formData2 });
-            } catch (e) { console.error('Lỗi upload attachment:', e); }
-          }
+        for (const att of localAttachments) {
+          try {
+            const response = await fetch(att.data);
+            const blob = await response.blob();
+            const file = new File([blob], att.name, { type: att.type });
+            const formData2 = new FormData();
+            formData2.append('note_id', savedNote.id);
+            formData2.append('files[]', file);
+            await apiCall('/attachments', { method: 'POST', body: formData2 });
+          } catch (e) { console.error('Lỗi upload attachment:', e); }
         }
       }
       
       const noteToSave = { ...formData, ...savedNote, content, updatedAt: now, createdAt: savedNote.created_at, id: savedNote.id, server_id: savedNote.id };
-      const updated = serverId 
-        ? notes.map(n => n.id === serverId || n.server_id === serverId ? noteToSave : n)
+      const updated = formData.server_id
+        ? notes.map(n => n.id === formData.server_id || n.server_id === formData.server_id ? noteToSave : n)
         : [noteToSave, ...notes];
       saveNotes(updated);
     } catch (err) {
@@ -1107,11 +1107,11 @@ const Home = () => {
   };
   const handleAttachmentAdd = async e => {
     const files = Array.from(e.target.files); if (!files.length) return;
-    const currentServerId = formData.server_id || formData.id;
     
-    if (currentServerId) {
+    // Chỉ upload lên server khi note đã được lưu (có server_id)
+    if (formData.server_id) {
       const formData2 = new FormData();
-      formData2.append('note_id', currentServerId);
+      formData2.append('note_id', formData.server_id);
       files.forEach(f => formData2.append('files[]', f));
       
       try {
