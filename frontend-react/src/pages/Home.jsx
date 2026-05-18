@@ -1201,7 +1201,7 @@ const Home = () => {
         onClick={() => handleViewNote(note)}>
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2 mb-1">
-            <h3 className="font-black text-[15px] flex-1 leading-snug">{note.title}</h3>
+            <h3 className="font-black text-[15px] flex-1 leading-snug !text-black">{note.title}</h3>
             <StatusIcons note={note} />
           </div>
           {!locked && <p className="text-[13px] text-black/60 m-0 line-clamp-2" style={{ fontFamily: fontFam }}>{stripped}</p>}
@@ -1238,7 +1238,7 @@ const Home = () => {
         {note.isPinned && <div className="absolute -top-2 -right-2 text-lg">📌</div>}
         <div className="flex-1 cursor-pointer" onClick={() => handleViewNote(note)}>
           <div className="flex justify-between items-start mb-2 gap-2">
-            <h3 className="font-black text-[15px] flex-1 leading-snug"
+            <h3 className="font-black text-[15px] flex-1 leading-snug !text-black"
               style={{ textDecoration: note.isDone ? 'line-through' : 'none', opacity: note.isDone ? 0.55 : 1 }}>
               {note.title}
             </h3>
